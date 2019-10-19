@@ -40,6 +40,11 @@ int main(int argc, char *argv[])
 {
     std::string appName("Raytracing In One Weekend");
     SDL_Window * window = initSDL(appName);
+    
+    // creating a renderer
+    SDL_Renderer * renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    SDL_SetRenderDrawColor(renderer, 0x00, 0xFF, 0x7F, 0xFF);
+    
 
 	CircularArray<60, float> fpsCounter;
     bool gameIsRunning = true;
@@ -95,6 +100,7 @@ int main(int argc, char *argv[])
             }
         }
 
+        SDL_RenderPresent(renderer);
 		frameCount++;
     }
 
