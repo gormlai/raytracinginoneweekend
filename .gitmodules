@@ -1,0 +1,3 @@
+[submodule "submodules/singlefile"]
+	path = submodules/singlefile
+	url = git@github.com:gormlai/singlefile.git
