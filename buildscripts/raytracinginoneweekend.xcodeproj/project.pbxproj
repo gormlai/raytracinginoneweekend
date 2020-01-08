@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		371FC04223C54CC700AF1293 /* VulkanSetup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 371FC04123C54CC700AF1293 /* VulkanSetup.cpp */; };
 		373E1ED6235BC51400C55A1F /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 373E1ED5235BC51400C55A1F /* Info.plist */; };
 		373E1ED8235BD11500C55A1F /* libSDL2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 373E1ED7235BD11500C55A1F /* libSDL2.dylib */; };
 		37A6FE95220B484F00C1270A /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 37A6FE94220B484F00C1270A /* main.cpp */; };
@@ -26,6 +27,7 @@
 
 /* Begin PBXFileReference section */
 		3710071B209F622400F46866 /* raytracinginoneweekend.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = raytracinginoneweekend.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		371FC04123C54CC700AF1293 /* VulkanSetup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VulkanSetup.cpp; path = "../../../submodules/vulkan-setup/VulkanSetup.cpp"; sourceTree = "<group>"; };
 		373E1ED4235BC51400C55A1F /* raytracinginoneweekend.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; name = raytracinginoneweekend.entitlements; path = ../resources/raytracinginoneweekend.entitlements; sourceTree = "<group>"; };
 		373E1ED5235BC51400C55A1F /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ../resources/Info.plist; sourceTree = "<group>"; };
 		373E1ED7235BD11500C55A1F /* libSDL2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libSDL2.dylib; path = ../dependencies/lib/osx/libSDL2.dylib; sourceTree = "<group>"; };
@@ -47,6 +49,7 @@
 		37100712209F622400F46866 = {
 			isa = PBXGroup;
 			children = (
+				371FC03F23C54C6700AF1293 /* submodules */,
 				37100738209F687200F46866 /* Resources */,
 				37100735209F67A600F46866 /* src */,
 				3710071C209F622400F46866 /* Products */,
@@ -77,6 +80,22 @@
 				373E1ED4235BC51400C55A1F /* raytracinginoneweekend.entitlements */,
 			);
 			name = Resources;
+			sourceTree = "<group>";
+		};
+		371FC03F23C54C6700AF1293 /* submodules */ = {
+			isa = PBXGroup;
+			children = (
+				371FC04023C54C9D00AF1293 /* vulkan-setup */,
+			);
+			path = submodules;
+			sourceTree = "<group>";
+		};
+		371FC04023C54C9D00AF1293 /* vulkan-setup */ = {
+			isa = PBXGroup;
+			children = (
+				371FC04123C54CC700AF1293 /* VulkanSetup.cpp */,
+			);
+			path = "vulkan-setup";
 			sourceTree = "<group>";
 		};
 		37C0618D209F696B00C0D91B /* Frameworks */ = {
@@ -161,6 +180,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				371FC04223C54CC700AF1293 /* VulkanSetup.cpp in Sources */,
 				37A6FE95220B484F00C1270A /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

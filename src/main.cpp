@@ -22,7 +22,7 @@ namespace
                                   SDL_WINDOWPOS_CENTERED,
                                   windowWidth,
                                   windowHeight,
-                                  SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE);
+                                  SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
         if (window == nullptr)
         {
             const char * error = SDL_GetError();
@@ -42,9 +42,16 @@ int main(int argc, char *argv[])
     SDL_Window * window = initSDL(appName);
     
     // creating a renderer
-    SDL_Renderer * renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    SDL_SetRenderDrawColor(renderer, 0x00, 0xFF, 0x7F, 0xFF);
+    SDL_Renderer * renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     
+    SDL_Texture * texture = SDL_CreateTexture(renderer,
+                                              SDL_PIXELFORMAT_RGBA8888,
+                                              0,
+                                              windowWidth,
+                                              windowHeight);
+    
+    char pixelBuffer[windowWidth][windowHeight][4];
+    memset(pixelBuffer, 0xFF, sizeof(pixelBuffer));
 
 	CircularArray<60, float> fpsCounter;
     bool gameIsRunning = true;
@@ -100,6 +107,8 @@ int main(int argc, char *argv[])
             }
         }
 
+        SDL_UpdateTexture(texture, NULL, (void*)pixelBuffer, 0);
+        SDL_RenderCopy(renderer, texture, NULL, NULL);
         SDL_RenderPresent(renderer);
 		frameCount++;
     }
