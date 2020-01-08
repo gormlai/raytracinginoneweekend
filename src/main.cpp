@@ -69,10 +69,11 @@ int main(int argc, char *argv[])
             lastTicks = currentTicks;
         }
         
-        static char windowTitleBuffer[1024];
+        constexpr int WINDOW_TITLE_BUFFER_SIZE = 1024;
+        static char windowTitleBuffer[WINDOW_TITLE_BUFFER_SIZE];
         const float average = fpsCounter.average();
         const int fpsAverage = (average>FLT_EPSILON) ? (int)(1.0f / average) : 0;
-        sprintf(windowTitleBuffer, "%s. FPS: %d", appName.c_str(), fpsAverage);
+        snprintf(windowTitleBuffer, WINDOW_TITLE_BUFFER_SIZE, "%s. FPS: %d", appName.c_str(), fpsAverage);
         SDL_SetWindowTitle(window, windowTitleBuffer);
         
         SDL_Event event;
