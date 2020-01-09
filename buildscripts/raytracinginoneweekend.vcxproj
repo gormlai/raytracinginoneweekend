@@ -107,7 +107,7 @@
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y /s /i /e "$(ProjectDir)..\dependencies\lib\$(PlatformTarget)\SDL2.dll" "$(TargetDir)"
-</Command>
+xcopy /y /s /i /e "$(ProjectDir)..\shaders\spirv\*.spv" "$(TargetDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -128,7 +128,7 @@
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y /s /i /e "$(ProjectDir)..\dependencies\lib\$(PlatformTarget)\SDL2.dll" "$(TargetDir)"
-</Command>
+xcopy /y /s /i /e "$(ProjectDir)..\shaders\spirv\*.spv" "$(TargetDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -153,7 +153,7 @@
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y /s /i /e "$(ProjectDir)..\dependencies\lib\$(PlatformTarget)\SDL2.dll" "$(TargetDir)"
-</Command>
+xcopy /y /s /i /e "$(ProjectDir)..\shaders\spirv\*.spv" "$(TargetDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -178,7 +178,7 @@
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y /s /i /e "$(ProjectDir)..\dependencies\lib\$(PlatformTarget)\SDL2.dll" "$(TargetDir)"
-</Command>
+xcopy /y /s /i /e "$(ProjectDir)..\shaders\spirv\*.spv" "$(TargetDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
