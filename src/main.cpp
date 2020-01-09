@@ -7,6 +7,8 @@
 #include "singlefile/SDL_FileStream.h"
 #include "vulkan-setup/VulkanSetup.h"
 
+#include "Mesh.h"
+
 namespace
 {
 	constexpr unsigned int windowWidth = 800;

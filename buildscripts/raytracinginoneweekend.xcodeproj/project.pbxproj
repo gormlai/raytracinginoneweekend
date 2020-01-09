@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		371FC04223C54CC700AF1293 /* VulkanSetup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 371FC04123C54CC700AF1293 /* VulkanSetup.cpp */; };
+		371FC04823C7EC0900AF1293 /* Mesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 371FC04323C7EC0900AF1293 /* Mesh.cpp */; };
+		371FC04923C7EC0900AF1293 /* MeshFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 371FC04523C7EC0900AF1293 /* MeshFactory.cpp */; };
 		373E1ED6235BC51400C55A1F /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 373E1ED5235BC51400C55A1F /* Info.plist */; };
 		373E1ED8235BD11500C55A1F /* libSDL2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 373E1ED7235BD11500C55A1F /* libSDL2.dylib */; };
 		37A6FE95220B484F00C1270A /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 37A6FE94220B484F00C1270A /* main.cpp */; };
@@ -28,6 +30,12 @@
 /* Begin PBXFileReference section */
 		3710071B209F622400F46866 /* raytracinginoneweekend.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = raytracinginoneweekend.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		371FC04123C54CC700AF1293 /* VulkanSetup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VulkanSetup.cpp; path = "../../../submodules/vulkan-setup/VulkanSetup.cpp"; sourceTree = "<group>"; };
+		371FC04323C7EC0900AF1293 /* Mesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mesh.cpp; path = ../src/Mesh.cpp; sourceTree = "<group>"; };
+		371FC04423C7EC0900AF1293 /* Mesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mesh.h; path = ../src/Mesh.h; sourceTree = "<group>"; };
+		371FC04523C7EC0900AF1293 /* MeshFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MeshFactory.cpp; path = ../src/MeshFactory.cpp; sourceTree = "<group>"; };
+		371FC04623C7EC0900AF1293 /* MeshFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MeshFactory.h; path = ../src/MeshFactory.h; sourceTree = "<group>"; };
+		371FC04723C7EC0900AF1293 /* Math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Math.h; path = ../src/Math.h; sourceTree = "<group>"; };
+		371FC04A23C7EC4B00AF1293 /* Defines.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Defines.h; path = ../src/Defines.h; sourceTree = "<group>"; };
 		373E1ED4235BC51400C55A1F /* raytracinginoneweekend.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; name = raytracinginoneweekend.entitlements; path = ../resources/raytracinginoneweekend.entitlements; sourceTree = "<group>"; };
 		373E1ED5235BC51400C55A1F /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ../resources/Info.plist; sourceTree = "<group>"; };
 		373E1ED7235BD11500C55A1F /* libSDL2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libSDL2.dylib; path = ../dependencies/lib/osx/libSDL2.dylib; sourceTree = "<group>"; };
@@ -68,6 +76,12 @@
 		37100735209F67A600F46866 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				371FC04A23C7EC4B00AF1293 /* Defines.h */,
+				371FC04723C7EC0900AF1293 /* Math.h */,
+				371FC04323C7EC0900AF1293 /* Mesh.cpp */,
+				371FC04423C7EC0900AF1293 /* Mesh.h */,
+				371FC04523C7EC0900AF1293 /* MeshFactory.cpp */,
+				371FC04623C7EC0900AF1293 /* MeshFactory.h */,
 				37A6FE94220B484F00C1270A /* main.cpp */,
 			);
 			name = src;
@@ -180,6 +194,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				371FC04823C7EC0900AF1293 /* Mesh.cpp in Sources */,
+				371FC04923C7EC0900AF1293 /* MeshFactory.cpp in Sources */,
 				371FC04223C54CC700AF1293 /* VulkanSetup.cpp in Sources */,
 				37A6FE95220B484F00C1270A /* main.cpp in Sources */,
 			);
