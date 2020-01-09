@@ -4,3 +4,6 @@
 [submodule "submodules/vulkan-setup"]
 	path = submodules/vulkan-setup
 	url = git@github.com:gormlai/vulkan-setup.git
+[submodule "submodules/glm"]
+	path = submodules/glm
+	url = git@github.com:gormlai/glm.git

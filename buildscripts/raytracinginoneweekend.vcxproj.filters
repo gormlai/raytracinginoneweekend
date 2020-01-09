@@ -13,10 +13,24 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="submodules">
+      <UniqueIdentifier>{788e246d-b6c5-430f-babf-d2a932782440}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="submodules\vulkan-setup">
+      <UniqueIdentifier>{9bc1c6bd-4c1c-4295-bb78-37fd8edc742a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\submodules\vulkan-setup\VulkanSetup.cpp">
+      <Filter>submodules\vulkan-setup</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\submodules\vulkan-setup\VulkanSetup.h">
+      <Filter>submodules\vulkan-setup</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

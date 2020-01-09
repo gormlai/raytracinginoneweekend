@@ -42,7 +42,11 @@ int main(int argc, char *argv[])
     std::string appName("Raytracing In One Weekend");
 
     SDL_Window * window = initSDL(appName);
-    
+
+    Vulkan::AppDescriptor appDescriptor;
+    appDescriptor._appName = appName;
+    appDescriptor._requiredVulkanVersion = VK_API_VERSION_1_1;
+
     // creating a renderer
     SDL_Renderer * renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     
