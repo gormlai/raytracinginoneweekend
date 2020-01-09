@@ -1,9 +1,10 @@
 #include <SDL2/SDL.h>
-//#include <SDL2/SDL_vulkan.h>
+#include <SDL2/SDL_vulkan.h>
 
 #include <string>
 
 #include "singlefile/CircularArray.h"
+#include "vulkan-setup/VulkanSetup.h"
 
 namespace
 {
@@ -22,7 +23,7 @@ namespace
                                   SDL_WINDOWPOS_CENTERED,
                                   windowWidth,
                                   windowHeight,
-                                  SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+                                  SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE);
         if (window == nullptr)
         {
             const char * error = SDL_GetError();
@@ -39,6 +40,7 @@ namespace
 int main(int argc, char *argv[])
 {
     std::string appName("Raytracing In One Weekend");
+
     SDL_Window * window = initSDL(appName);
     
     // creating a renderer

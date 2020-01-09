@@ -1,3 +1,6 @@
 [submodule "submodules/singlefile"]
 	path = submodules/singlefile
 	url = git@github.com:gormlai/singlefile.git
+[submodule "submodules/vulkan-setup"]
+	path = submodules/vulkan-setup
+	url = git@github.com:gormlai/vulkan-setup.git
