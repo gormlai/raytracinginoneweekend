@@ -1,5 +1,5 @@
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_vulkan.h>
+//#include <SDL2/SDL_vulkan.h>
 
 #include <string>
 
@@ -50,19 +50,20 @@ int main(int argc, char *argv[])
                                               windowWidth,
                                               windowHeight);
     
-    char pixelBuffer[windowWidth][windowHeight][4];
+    static char pixelBuffer[windowWidth][windowHeight][4];
     memset(pixelBuffer, 0xFF, sizeof(pixelBuffer));
 
-	CircularArray<60, float> fpsCounter;
+	CircularArray<60, double> fpsCounter;
     bool gameIsRunning = true;
     while (gameIsRunning)
     {
 		static unsigned int frameCount = 0;
-		Uint32 currentTicks = SDL_GetTicks();
-        static Uint32 lastTicks = currentTicks;
-        
-        Uint32 delta = currentTicks - lastTicks;
-		const float secondsDelta = float(delta) / 1000.0f;
+		Uint64 currentTicks = SDL_GetPerformanceCounter();
+        static Uint64 lastTicks = currentTicks;
+
+        constexpr float TICKS_RESOLUTION = 1.0f;
+        Uint64 delta = currentTicks - lastTicks;
+		const double secondsDelta = double(delta) / SDL_GetPerformanceFrequency();
 		if (delta > 0)
         {
             fpsCounter.addValue(secondsDelta);
@@ -70,9 +71,9 @@ int main(int argc, char *argv[])
         }
         
         constexpr int WINDOW_TITLE_BUFFER_SIZE = 1024;
-        static char windowTitleBuffer[WINDOW_TITLE_BUFFER_SIZE];
-        const float average = fpsCounter.average();
-        const int fpsAverage = (average>FLT_EPSILON) ? (int)(1.0f / average) : 0;
+        static char * windowTitleBuffer = new char[WINDOW_TITLE_BUFFER_SIZE];
+        const double average = fpsCounter.average();
+        const int fpsAverage = (average>DBL_EPSILON) ? (int)(1.0 / average) : 0;
         snprintf(windowTitleBuffer, WINDOW_TITLE_BUFFER_SIZE, "%s. FPS: %d", appName.c_str(), fpsAverage);
         SDL_SetWindowTitle(window, windowTitleBuffer);
         
