@@ -7,12 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		371FC04223C54CC700AF1293 /* VulkanSetup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 371FC04123C54CC700AF1293 /* VulkanSetup.cpp */; };
 		371FC04823C7EC0900AF1293 /* Mesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 371FC04323C7EC0900AF1293 /* Mesh.cpp */; };
 		371FC04923C7EC0900AF1293 /* MeshFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 371FC04523C7EC0900AF1293 /* MeshFactory.cpp */; };
 		373E1ED6235BC51400C55A1F /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 373E1ED5235BC51400C55A1F /* Info.plist */; };
 		373E1ED8235BD11500C55A1F /* libSDL2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 373E1ED7235BD11500C55A1F /* libSDL2.dylib */; };
 		37A6FE95220B484F00C1270A /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 37A6FE94220B484F00C1270A /* main.cpp */; };
+		37DB71B523C7F83400673155 /* libMoltenVK.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 37DB71B423C7F83400673155 /* libMoltenVK.dylib */; };
+		37DB71B623C7F89200673155 /* libMoltenVK.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 37DB71B423C7F83400673155 /* libMoltenVK.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		37DB71B723C7F89200673155 /* libSDL2.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 373E1ED7235BD11500C55A1F /* libSDL2.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		37DB71BE23C7F94B00673155 /* VulkanSetup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 37DB71BD23C7F94B00673155 /* VulkanSetup.cpp */; };
+		37DB71C723C7F98100673155 /* triangle_frag.spv in Resources */ = {isa = PBXBuildFile; fileRef = 37DB71C523C7F97400673155 /* triangle_frag.spv */; };
+		37DB71C823C7F98400673155 /* triangle_vert.spv in Resources */ = {isa = PBXBuildFile; fileRef = 37DB71C623C7F97400673155 /* triangle_vert.spv */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -22,6 +27,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				37DB71B623C7F89200673155 /* libMoltenVK.dylib in CopyFiles */,
+				37DB71B723C7F89200673155 /* libSDL2.dylib in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -29,7 +36,6 @@
 
 /* Begin PBXFileReference section */
 		3710071B209F622400F46866 /* raytracinginoneweekend.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = raytracinginoneweekend.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		371FC04123C54CC700AF1293 /* VulkanSetup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VulkanSetup.cpp; path = "../../../submodules/vulkan-setup/VulkanSetup.cpp"; sourceTree = "<group>"; };
 		371FC04323C7EC0900AF1293 /* Mesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mesh.cpp; path = ../src/Mesh.cpp; sourceTree = "<group>"; };
 		371FC04423C7EC0900AF1293 /* Mesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mesh.h; path = ../src/Mesh.h; sourceTree = "<group>"; };
 		371FC04523C7EC0900AF1293 /* MeshFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MeshFactory.cpp; path = ../src/MeshFactory.cpp; sourceTree = "<group>"; };
@@ -40,6 +46,13 @@
 		373E1ED5235BC51400C55A1F /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ../resources/Info.plist; sourceTree = "<group>"; };
 		373E1ED7235BD11500C55A1F /* libSDL2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libSDL2.dylib; path = ../dependencies/lib/osx/libSDL2.dylib; sourceTree = "<group>"; };
 		37A6FE94220B484F00C1270A /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = ../src/main.cpp; sourceTree = "<group>"; };
+		37DB71B423C7F83400673155 /* libMoltenVK.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libMoltenVK.dylib; path = ../dependencies/lib/osx/libMoltenVK.dylib; sourceTree = "<group>"; };
+		37DB71BC23C7F94B00673155 /* VulkanSetup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VulkanSetup.h; path = "../submodules/vulkan-setup/VulkanSetup.h"; sourceTree = "<group>"; };
+		37DB71BD23C7F94B00673155 /* VulkanSetup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VulkanSetup.cpp; path = "../submodules/vulkan-setup/VulkanSetup.cpp"; sourceTree = "<group>"; };
+		37DB71C123C7F96A00673155 /* triangle.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = triangle.vert; path = ../shaders/glsl/triangle.vert; sourceTree = "<group>"; };
+		37DB71C223C7F96A00673155 /* triangle.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = triangle.frag; path = ../shaders/glsl/triangle.frag; sourceTree = "<group>"; };
+		37DB71C523C7F97400673155 /* triangle_frag.spv */ = {isa = PBXFileReference; lastKnownFileType = file; name = triangle_frag.spv; path = ../shaders/spirv/triangle_frag.spv; sourceTree = "<group>"; };
+		37DB71C623C7F97400673155 /* triangle_vert.spv */ = {isa = PBXFileReference; lastKnownFileType = file; name = triangle_vert.spv; path = ../shaders/spirv/triangle_vert.spv; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,6 +60,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				37DB71B523C7F83400673155 /* libMoltenVK.dylib in Frameworks */,
 				373E1ED8235BD11500C55A1F /* libSDL2.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -57,7 +71,8 @@
 		37100712209F622400F46866 = {
 			isa = PBXGroup;
 			children = (
-				371FC03F23C54C6700AF1293 /* submodules */,
+				37DB71BA23C7F91100673155 /* submodules */,
+				37DB71B823C7F8E900673155 /* shaders */,
 				37100738209F687200F46866 /* Resources */,
 				37100735209F67A600F46866 /* src */,
 				3710071C209F622400F46866 /* Products */,
@@ -96,28 +111,57 @@
 			name = Resources;
 			sourceTree = "<group>";
 		};
-		371FC03F23C54C6700AF1293 /* submodules */ = {
-			isa = PBXGroup;
-			children = (
-				371FC04023C54C9D00AF1293 /* vulkan-setup */,
-			);
-			path = submodules;
-			sourceTree = "<group>";
-		};
-		371FC04023C54C9D00AF1293 /* vulkan-setup */ = {
-			isa = PBXGroup;
-			children = (
-				371FC04123C54CC700AF1293 /* VulkanSetup.cpp */,
-			);
-			path = "vulkan-setup";
-			sourceTree = "<group>";
-		};
 		37C0618D209F696B00C0D91B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				37DB71B423C7F83400673155 /* libMoltenVK.dylib */,
 				373E1ED7235BD11500C55A1F /* libSDL2.dylib */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		37DB71B823C7F8E900673155 /* shaders */ = {
+			isa = PBXGroup;
+			children = (
+				37DB71C023C7F95A00673155 /* spirv */,
+				37DB71BF23C7F95400673155 /* glsl */,
+			);
+			name = shaders;
+			sourceTree = "<group>";
+		};
+		37DB71BA23C7F91100673155 /* submodules */ = {
+			isa = PBXGroup;
+			children = (
+				37DB71BB23C7F91C00673155 /* vulkan-setup */,
+			);
+			name = submodules;
+			sourceTree = "<group>";
+		};
+		37DB71BB23C7F91C00673155 /* vulkan-setup */ = {
+			isa = PBXGroup;
+			children = (
+				37DB71BD23C7F94B00673155 /* VulkanSetup.cpp */,
+				37DB71BC23C7F94B00673155 /* VulkanSetup.h */,
+			);
+			name = "vulkan-setup";
+			sourceTree = "<group>";
+		};
+		37DB71BF23C7F95400673155 /* glsl */ = {
+			isa = PBXGroup;
+			children = (
+				37DB71C223C7F96A00673155 /* triangle.frag */,
+				37DB71C123C7F96A00673155 /* triangle.vert */,
+			);
+			name = glsl;
+			sourceTree = "<group>";
+		};
+		37DB71C023C7F95A00673155 /* spirv */ = {
+			isa = PBXGroup;
+			children = (
+				37DB71C523C7F97400673155 /* triangle_frag.spv */,
+				37DB71C623C7F97400673155 /* triangle_vert.spv */,
+			);
+			name = spirv;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -184,6 +228,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				373E1ED6235BC51400C55A1F /* Info.plist in Resources */,
+				37DB71C723C7F98100673155 /* triangle_frag.spv in Resources */,
+				37DB71C823C7F98400673155 /* triangle_vert.spv in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -196,7 +242,7 @@
 			files = (
 				371FC04823C7EC0900AF1293 /* Mesh.cpp in Sources */,
 				371FC04923C7EC0900AF1293 /* MeshFactory.cpp in Sources */,
-				371FC04223C54CC700AF1293 /* VulkanSetup.cpp in Sources */,
+				37DB71BE23C7F94B00673155 /* VulkanSetup.cpp in Sources */,
 				37A6FE95220B484F00C1270A /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
