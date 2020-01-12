@@ -65,11 +65,83 @@ namespace
 
 }
 
+void render(Vulkan::AppDescriptor & appDesc, Vulkan::VulkanContext & context, bool recreateSwapChain)
+{
+    const unsigned currentFrame = context._currentFrame;
+    if (recreateSwapChain)
+        Vulkan::recreateSwapChain(appDesc, context);
+
+    const VkResult waitForFencesResult = vkWaitForFences(context._device, 1, &context._fences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
+    assert(waitForFencesResult == VK_SUCCESS);
+    const VkResult resetFencesResult = vkResetFences(context._device, 1, &context._fences[currentFrame]);
+    assert(resetFencesResult == VK_SUCCESS);
+
+
+    uint32_t frameIndex=0;
+    const VkResult acquireNextImageResult = vkAcquireNextImageKHR(context._device, context._swapChain, std::numeric_limits<uint64_t>::max(), context._imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &frameIndex);
+    if (acquireNextImageResult == VK_ERROR_OUT_OF_DATE_KHR)
+    {
+        Vulkan::recreateSwapChain(appDesc, context);
+        return;
+    }
+
+    assert(acquireNextImageResult == VK_SUCCESS);
+    if(acquireNextImageResult != VK_SUCCESS)
+        return; // skip frame and try again later
+
+    // final submit
+    VkSubmitInfo submitInfo;
+    memset(&submitInfo, 0, sizeof(VkSubmitInfo));
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    constexpr VkPipelineStageFlags stageFlags[]{ VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    submitInfo.waitSemaphoreCount = 1;
+    submitInfo.pWaitSemaphores = &context._imageAvailableSemaphores[currentFrame];
+    submitInfo.pWaitDstStageMask = stageFlags;
+
+    VkCommandBuffer commandBuffers[]
+    {
+        context._commandBuffers[currentFrame],
+    };
+
+    submitInfo.commandBufferCount = sizeof(commandBuffers)/sizeof(VkCommandBuffer);
+    submitInfo.pCommandBuffers = commandBuffers;
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = &context._renderFinishedSemaphores[currentFrame];
+
+    VkResult submitResult = vkQueueSubmit(context._graphicsQueue, 1, &submitInfo, context._fences[currentFrame]);
+    assert(submitResult == VK_SUCCESS);
+    if(submitResult != VK_SUCCESS)
+        return; // skip frame and try again later
+
+    VkPresentInfoKHR presentInfo;
+    memset(&presentInfo, 0, sizeof(VkPresentInfoKHR));
+    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    presentInfo.waitSemaphoreCount = 1;
+    presentInfo.pWaitSemaphores = &context._renderFinishedSemaphores[currentFrame];
+    presentInfo.pSwapchains = &context._swapChain;
+    presentInfo.swapchainCount = 1;
+    presentInfo.pImageIndices = &frameIndex;
+    presentInfo.pResults = nullptr;
+
+    VkResult presentResult = vkQueuePresentKHR(context._presentQueue, &presentInfo);
+    if (presentResult != VK_SUCCESS)
+    {
+        Vulkan::recreateSwapChain(appDesc, context);
+    }
+
+    //  if (presentResult != VK_SUCCESS)
+    //      return;
+
+    context._currentFrame = (context._currentFrame+1) % (unsigned int)context._frameBuffers.size();
+
+}
 
 
 
 int main(int argc, char *argv[])
 {
+    bool recreateSwapChain = false;
+
     std::string appName("Raytracing In One Weekend");
 
     SDL_Window * window = initSDL(appName);
@@ -136,17 +208,9 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // creating a renderer
-    SDL_Renderer * renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    
-    SDL_Texture * texture = SDL_CreateTexture(renderer,
-                                              SDL_PIXELFORMAT_RGBA8888,
-                                              0,
-                                              windowWidth,
-                                              windowHeight);
-    
     static char pixelBuffer[windowWidth][windowHeight][4];
     memset(pixelBuffer, 0xFF, sizeof(pixelBuffer));
+
 
 	CircularArray<60, double> fpsCounter;
     bool gameIsRunning = true;
@@ -156,7 +220,6 @@ int main(int argc, char *argv[])
 		Uint64 currentTicks = SDL_GetPerformanceCounter();
         static Uint64 lastTicks = currentTicks;
 
-        constexpr float TICKS_RESOLUTION = 1.0f;
         Uint64 delta = currentTicks - lastTicks;
 		const double secondsDelta = double(delta) / SDL_GetPerformanceFrequency();
 		if (delta > 0)
@@ -171,6 +234,17 @@ int main(int argc, char *argv[])
         const int fpsAverage = (average>DBL_EPSILON) ? (int)(1.0 / average) : 0;
         snprintf(windowTitleBuffer, WINDOW_TITLE_BUFFER_SIZE, "%s. FPS: %d", appName.c_str(), fpsAverage);
         SDL_SetWindowTitle(window, windowTitleBuffer);
+
+        gameIsRunning = Vulkan::update(appDesc, context, context._currentFrame);
+        if (gameIsRunning)
+        {
+            render(appDesc, context, recreateSwapChain);
+            SDL_UpdateWindowSurface(appDesc._window);
+            recreateSwapChain = false;
+        }
+
+
+
         
         SDL_Event event;
         while (SDL_PollEvent(&event) > 0)
@@ -197,6 +271,7 @@ int main(int argc, char *argv[])
 					{
 					case SDL_WINDOWEVENT_SIZE_CHANGED:
 					case SDL_WINDOWEVENT_RESIZED:
+                        recreateSwapChain = true;
 						break;
 					}
 				}
@@ -204,9 +279,6 @@ int main(int argc, char *argv[])
             }
         }
 
-        SDL_UpdateTexture(texture, NULL, (void*)pixelBuffer, 0);
-        SDL_RenderCopy(renderer, texture, NULL, NULL);
-        SDL_RenderPresent(renderer);
 		frameCount++;
     }
 
