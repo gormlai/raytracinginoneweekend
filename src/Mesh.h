@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -38,7 +39,19 @@ struct Transform
 
 };
 
-typedef Vulkan::Vertex<glm::vec4, glm::vec4> MeshVertex;
+struct MeshVertex
+{
+    MeshVertex() {}
+
+    MeshVertex(const glm::vec4 & position, const glm::vec4 & color)
+        :_position(position)
+        ,_color(color) {}
+    
+
+    glm::vec4 _position;
+    glm::vec4 _color;
+};
+
 struct Mesh;
 typedef std::shared_ptr<Mesh> MeshPtr;
 

@@ -2,6 +2,7 @@
 #include <SDL2/SDL_vulkan.h>
 
 #include <string>
+#include <cstddef>
 
 #include "singlefile/CircularArray.h"
 #include "singlefile/SDL_FileStream.h"
@@ -69,13 +70,20 @@ namespace
 void render(Vulkan::AppDescriptor & appDesc, Vulkan::VulkanContext & context, bool recreateSwapChain)
 {
     const unsigned currentFrame = context._currentFrame;
+    bool earlyOut = false;
     if (recreateSwapChain)
+    {
         Vulkan::recreateSwapChain(appDesc, context);
+//        earlyOut = true;
+    }
 
     const VkResult waitForFencesResult = vkWaitForFences(context._device, 1, &context._fences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
     assert(waitForFencesResult == VK_SUCCESS);
     const VkResult resetFencesResult = vkResetFences(context._device, 1, &context._fences[currentFrame]);
     assert(resetFencesResult == VK_SUCCESS);
+
+    if(earlyOut)
+        return;
 
 
     uint32_t frameIndex=0;
@@ -138,6 +146,32 @@ void render(Vulkan::AppDescriptor & appDesc, Vulkan::VulkanContext & context, bo
 }
 
 
+void modifyGraphicsPipelineInfo(Vulkan::VkGraphicsPipelineCreateInfoDescriptor& createInfo, unsigned int index)
+{
+    createInfo._rasterizerCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
+
+    VkVertexInputBindingDescription bindingDescription;
+    memset(&bindingDescription, 0, sizeof(VkVertexInputBindingDescription));
+
+    bindingDescription.binding = 0;
+    bindingDescription.stride = sizeof(MeshVertex);
+    bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    createInfo._vertexInputBindingDescriptions.push_back(bindingDescription);
+
+    std::array<VkVertexInputAttributeDescription, 2> attributes = {};
+    attributes[0].binding = 0;
+    attributes[0].location = 0;
+    attributes[0].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    attributes[0].offset = 0;
+    attributes[1].binding = 0;
+    attributes[1].location = 1;
+    attributes[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    attributes[1].offset = sizeof(glm::vec4);
+    createInfo._vertexInputAttributeDescriptions.push_back(attributes[0]);
+    createInfo._vertexInputAttributeDescriptions.push_back(attributes[1]);
+}
+
+
 
 int main(int argc, char *argv[])
 {
@@ -163,6 +197,8 @@ int main(int argc, char *argv[])
     };
     readShaders(shaders);
     appDesc._shaders = shaders;
+
+    appDesc._numGraphicsPipelines = 1;
 
 
     glm::vec3 camPos{ 0,0,8 };
@@ -193,8 +229,8 @@ int main(int argc, char *argv[])
         return rVal;
     };
 
-    appDesc._getBindingDescription = []() { return MeshVertex::getBindingDescription(); };
-    appDesc._getAttributes = []() { return MeshVertex::getAttributes(); };
+    appDesc._graphicsPipelineCreationCallback = [](Vulkan::VkGraphicsPipelineCreateInfoDescriptor& createInfo, unsigned int index) {
+        modifyGraphicsPipelineInfo(createInfo, index); };
 
     appDesc._updateFunction = [&totalRot](float timePassed, float deltaTime)
     {
@@ -204,6 +240,7 @@ int main(int argc, char *argv[])
         //        totalRot = xRot * yRot * zRot;
         return true;
     };
+
 
 
     Vulkan::VulkanContext context;

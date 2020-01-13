@@ -85,7 +85,7 @@ MeshPtr MeshFactory::createBox(const float width, const float height, const floa
     for(unsigned int i=0 ; i < numVertices ; i++)
     {
        const glm::vec4 position{vertexData[i],1.0f};
-       MeshVertex vertex(position, vertexColor);
+       MeshVertex vertex{position, vertexColor};
        vertices[i] = vertex;
     }
     
