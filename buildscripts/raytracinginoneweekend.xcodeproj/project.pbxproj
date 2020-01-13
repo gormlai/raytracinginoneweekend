@@ -9,9 +9,9 @@
 /* Begin PBXBuildFile section */
 		371FC04823C7EC0900AF1293 /* Mesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 371FC04323C7EC0900AF1293 /* Mesh.cpp */; };
 		371FC04923C7EC0900AF1293 /* MeshFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 371FC04523C7EC0900AF1293 /* MeshFactory.cpp */; };
-		373E1ED6235BC51400C55A1F /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 373E1ED5235BC51400C55A1F /* Info.plist */; };
 		373E1ED8235BD11500C55A1F /* libSDL2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 373E1ED7235BD11500C55A1F /* libSDL2.dylib */; };
 		37A6FE95220B484F00C1270A /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 37A6FE94220B484F00C1270A /* main.cpp */; };
+		37AC0DA123CB96B4001D3925 /* Raytracer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 37AC0D9F23CB96B4001D3925 /* Raytracer.cpp */; };
 		37DB71B523C7F83400673155 /* libMoltenVK.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 37DB71B423C7F83400673155 /* libMoltenVK.dylib */; };
 		37DB71B623C7F89200673155 /* libMoltenVK.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 37DB71B423C7F83400673155 /* libMoltenVK.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		37DB71B723C7F89200673155 /* libSDL2.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 373E1ED7235BD11500C55A1F /* libSDL2.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -46,6 +46,8 @@
 		373E1ED5235BC51400C55A1F /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ../resources/Info.plist; sourceTree = "<group>"; };
 		373E1ED7235BD11500C55A1F /* libSDL2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libSDL2.dylib; path = ../dependencies/lib/osx/libSDL2.dylib; sourceTree = "<group>"; };
 		37A6FE94220B484F00C1270A /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = ../src/main.cpp; sourceTree = "<group>"; };
+		37AC0D9F23CB96B4001D3925 /* Raytracer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Raytracer.cpp; path = ../src/Raytracer.cpp; sourceTree = "<group>"; };
+		37AC0DA023CB96B4001D3925 /* Raytracer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Raytracer.h; path = ../src/Raytracer.h; sourceTree = "<group>"; };
 		37DB71B423C7F83400673155 /* libMoltenVK.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libMoltenVK.dylib; path = ../dependencies/lib/osx/libMoltenVK.dylib; sourceTree = "<group>"; };
 		37DB71BC23C7F94B00673155 /* VulkanSetup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VulkanSetup.h; path = "../submodules/vulkan-setup/VulkanSetup.h"; sourceTree = "<group>"; };
 		37DB71BD23C7F94B00673155 /* VulkanSetup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VulkanSetup.cpp; path = "../submodules/vulkan-setup/VulkanSetup.cpp"; sourceTree = "<group>"; };
@@ -91,6 +93,8 @@
 		37100735209F67A600F46866 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				37AC0D9F23CB96B4001D3925 /* Raytracer.cpp */,
+				37AC0DA023CB96B4001D3925 /* Raytracer.h */,
 				371FC04A23C7EC4B00AF1293 /* Defines.h */,
 				371FC04723C7EC0900AF1293 /* Math.h */,
 				371FC04323C7EC0900AF1293 /* Mesh.cpp */,
@@ -191,7 +195,7 @@
 		37100713209F622400F46866 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1110;
+				LastUpgradeCheck = 1130;
 				ORGANIZATIONNAME = "Kotori Studios";
 				TargetAttributes = {
 					3710071A209F622400F46866 = {
@@ -227,7 +231,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				373E1ED6235BC51400C55A1F /* Info.plist in Resources */,
 				37DB71C723C7F98100673155 /* triangle_frag.spv in Resources */,
 				37DB71C823C7F98400673155 /* triangle_vert.spv in Resources */,
 			);
@@ -243,6 +246,7 @@
 				371FC04823C7EC0900AF1293 /* Mesh.cpp in Sources */,
 				371FC04923C7EC0900AF1293 /* MeshFactory.cpp in Sources */,
 				37DB71BE23C7F94B00673155 /* VulkanSetup.cpp in Sources */,
+				37AC0DA123CB96B4001D3925 /* Raytracer.cpp in Sources */,
 				37A6FE95220B484F00C1270A /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -362,7 +366,6 @@
 		3710072D209F622500F46866 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_OPTIMIZATION_PROFILE_FILE = "";
 				CODE_SIGN_IDENTITY = "Mac Developer";
@@ -407,7 +410,6 @@
 		3710072E209F622500F46866 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_OPTIMIZATION_PROFILE_FILE = "";
 				CODE_SIGN_IDENTITY = "-";

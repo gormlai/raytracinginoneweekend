@@ -8,6 +8,7 @@
 #include "vulkan-setup/VulkanSetup.h"
 
 #include "Mesh.h"
+#include "Raytracer.h"
 
 namespace
 {
@@ -208,9 +209,11 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    RayTracer tracer(appDesc, context);
+
+
     static char pixelBuffer[windowWidth][windowHeight][4];
     memset(pixelBuffer, 0xFF, sizeof(pixelBuffer));
-
 
 	CircularArray<60, double> fpsCounter;
     bool gameIsRunning = true;
@@ -238,14 +241,12 @@ int main(int argc, char *argv[])
         gameIsRunning = Vulkan::update(appDesc, context, context._currentFrame);
         if (gameIsRunning)
         {
+            tracer.update();
             render(appDesc, context, recreateSwapChain);
             SDL_UpdateWindowSurface(appDesc._window);
             recreateSwapChain = false;
         }
 
-
-
-        
         SDL_Event event;
         while (SDL_PollEvent(&event) > 0)
         {
