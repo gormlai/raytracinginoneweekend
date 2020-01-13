@@ -149,7 +149,11 @@ int main(int argc, char *argv[])
 
     Vulkan::AppDescriptor appDesc;
     appDesc._appName = appName;
+#if defined(__APPLE__)
     appDesc._requiredVulkanVersion = VK_API_VERSION_1_0;
+#else
+    appDesc._requiredVulkanVersion = VK_API_VERSION_1_1;
+#endif
     appDesc._window = window;
 
     std::vector<Vulkan::Shader> shaders =
