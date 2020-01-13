@@ -20,9 +20,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main.cpp" />
+    <ClCompile Include="..\src\Mesh.cpp" />
+    <ClCompile Include="..\src\MeshFactory.cpp" />
+    <ClCompile Include="..\src\Raytracer.cpp" />
     <ClCompile Include="..\submodules\vulkan-setup\VulkanSetup.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\Defines.h" />
+    <ClInclude Include="..\src\Math.h" />
+    <ClInclude Include="..\src\Mesh.h" />
+    <ClInclude Include="..\src\MeshFactory.h" />
+    <ClInclude Include="..\src\Raytracer.h" />
     <ClInclude Include="..\submodules\vulkan-setup\VulkanSetup.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
