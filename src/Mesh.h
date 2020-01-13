@@ -43,13 +43,16 @@ struct MeshVertex
 {
     MeshVertex() {}
 
-    MeshVertex(const glm::vec4 & position, const glm::vec4 & color)
+    MeshVertex(const glm::vec4 & position, const glm::vec4 & color, const glm::vec2 & uv)
         :_position(position)
-        ,_color(color) {}
+        ,_color(color)
+        ,_uv(uv)
+    {}
     
 
     glm::vec4 _position;
     glm::vec4 _color;
+    glm::vec2 _uv;
 };
 
 struct Mesh;

@@ -48,14 +48,13 @@ MeshPtr MeshFactory::createPlane(const float width, const float height)
     MeshPtr pMesh(new Mesh());
     Mesh & mesh = *pMesh;
     
-    const glm::vec4 vertexColor = getRandomColor();
     
     const std::vector<MeshVertex> vertices =
     {
-        MeshVertex( {-width/2.0f, - height/2.0f, 0.0, 1.0f},vertexColor),
-        MeshVertex( {width/2.0f, - height/2.0f, 0.0f, 1.0f},vertexColor),
-        MeshVertex( {width/2.0f, height/2.0f, 0.0f, 1.0f},vertexColor),
-        MeshVertex( {-width/2.0f, height/2.0f, 0.0f, 1.0f},vertexColor),
+        MeshVertex( {-width/2.0f, - height/2.0f, 0.0, 1.0f}, getRandomColor(), {0,0}),
+        MeshVertex( {width/2.0f, - height/2.0f, 0.0f, 1.0f}, getRandomColor(), {1,0}),
+        MeshVertex( {width/2.0f, height/2.0f, 0.0f, 1.0f},   getRandomColor(), {1,1}),
+        MeshVertex( {-width/2.0f, height/2.0f, 0.0f, 1.0f},  getRandomColor(), {0,1}),
     };
     
     const std::vector<uint16_t> indices = { 0, 1, 2, 2, 3, 0 };
@@ -80,12 +79,14 @@ MeshPtr MeshFactory::createBox(const float width, const float height, const floa
         {width/2.0f,  height/2.0f,  depth/2.0f},
         {width/2.0f,  -height/2.0f, depth/2.0f},
     };
+
     const unsigned int numVertices = sizeof(vertexData) / sizeof(glm::vec3);
 	std::vector<MeshVertex> vertices(numVertices);
     for(unsigned int i=0 ; i < numVertices ; i++)
     {
        const glm::vec4 position{vertexData[i],1.0f};
-       MeshVertex vertex{position, vertexColor};
+       const glm::vec2 uv{0.0f, 0.0f};
+       MeshVertex vertex{position, vertexColor, uv};
        vertices[i] = vertex;
     }
     

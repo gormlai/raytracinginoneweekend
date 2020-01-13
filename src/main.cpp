@@ -158,7 +158,7 @@ void modifyGraphicsPipelineInfo(Vulkan::VkGraphicsPipelineCreateInfoDescriptor& 
     bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
     createInfo._vertexInputBindingDescriptions.push_back(bindingDescription);
 
-    std::array<VkVertexInputAttributeDescription, 2> attributes = {};
+    std::array<VkVertexInputAttributeDescription, 3> attributes = {};
     attributes[0].binding = 0;
     attributes[0].location = 0;
     attributes[0].format = VK_FORMAT_R32G32B32A32_SFLOAT;
@@ -167,8 +167,13 @@ void modifyGraphicsPipelineInfo(Vulkan::VkGraphicsPipelineCreateInfoDescriptor& 
     attributes[1].location = 1;
     attributes[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
     attributes[1].offset = sizeof(glm::vec4);
+    attributes[2].binding = 0;
+    attributes[2].location = 2;
+    attributes[2].format = VK_FORMAT_R32G32_SFLOAT;
+    attributes[2].offset = sizeof(glm::vec4) + sizeof(glm::vec2);
     createInfo._vertexInputAttributeDescriptions.push_back(attributes[0]);
     createInfo._vertexInputAttributeDescriptions.push_back(attributes[1]);
+    createInfo._vertexInputAttributeDescriptions.push_back(attributes[2]);
 }
 
 
