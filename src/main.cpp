@@ -257,9 +257,21 @@ int main(int argc, char *argv[])
 
     RayTracer tracer(appDesc, context);
 
-
-    static char pixelBuffer[windowWidth][windowHeight][4];
-    memset(pixelBuffer, 0xFF, sizeof(pixelBuffer));
+    // create the textured image
+    constexpr int imageWidth = 200;
+    constexpr int imageHeight = 150;
+    static glm::vec4 pixelBuffer[imageWidth][imageHeight];
+    for(int y = imageHeight-1 ; y>=0 ; y--)
+    {
+        for(int x = 0 ; x < imageWidth ; x++)
+        {
+            float red = (float)x / imageWidth;
+            float green = (float)y / imageHeight;
+            float blue = 0.2f;
+            float alpha = 1.0f;
+            pixelBuffer[x][y] = glm::vec4{red, green, blue, alpha};
+        }
+    }
 
 	CircularArray<60, double> fpsCounter;
     bool gameIsRunning = true;
