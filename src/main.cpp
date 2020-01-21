@@ -67,7 +67,7 @@ namespace
 
 }
 
-void render(Vulkan::AppDescriptor & appDesc, Vulkan::VulkanContext & context, bool recreateSwapChain)
+void render(Vulkan::AppDescriptor & appDesc, Vulkan::Context & context, bool recreateSwapChain)
 {
     const unsigned currentFrame = context._currentFrame;
     bool earlyOut = false;
@@ -248,7 +248,7 @@ int main(int argc, char *argv[])
 
 
 
-    Vulkan::VulkanContext context;
+    Vulkan::Context context;
     if(!Vulkan::handleVulkanSetup(appDesc, context))
     {
         SDL_LogError(0, "Failed to handle vulkan setup\n");

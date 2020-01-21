@@ -7,7 +7,7 @@
 class RayTracer
 {
 public:
-    RayTracer(Vulkan::AppDescriptor & appInfo, Vulkan::VulkanContext & context);
+    RayTracer(Vulkan::AppDescriptor & appInfo, Vulkan::Context & context);
 
     void update();
 
@@ -15,7 +15,7 @@ public:
 
 private:
     Vulkan::AppDescriptor & m_appInfo;
-    Vulkan::VulkanContext & m_context;
+    Vulkan::Context & m_context;
 
     void createBackground();
 

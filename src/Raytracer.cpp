@@ -1,7 +1,7 @@
 #include "Raytracer.h"
 #include "MeshFactory.h"
 
-RayTracer::RayTracer(Vulkan::AppDescriptor & appInfo, Vulkan::VulkanContext & context)
+RayTracer::RayTracer(Vulkan::AppDescriptor & appInfo, Vulkan::Context & context)
 :m_appInfo(appInfo)
 ,m_context(context)
 {
