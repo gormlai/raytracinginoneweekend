@@ -42,7 +42,12 @@ void RayTracer::createBackground()
     mesh->_name = std::string("Floor");
 
     void *userData = (void*)mesh.get();
-    Vulkan::addMesh(m_appInfo, m_context, vertexData, indexData, userData);
+    Vulkan::Mesh vulkanMesh;
+    if(Vulkan::addMesh(m_appInfo, m_context, vertexData, indexData, userData, {sizeof(UniformBufferObject)}, vulkanMesh))
+    {
+        std::vector<Vulkan::Mesh> meshes {vulkanMesh};
+        _vulkanMeshes = meshes;
+    }
 
     m_background = mesh; // store pointer
 }

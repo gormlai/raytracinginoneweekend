@@ -64,8 +64,84 @@ namespace
         return true;
     }
 
-
 }
+
+bool recordStandardCommandBuffers(Vulkan::AppDescriptor& appDesc, Vulkan::Context & context, Vulkan::EffectDescriptor & effectDescriptor)
+{
+    std::vector<VkCommandBuffer>& commandBuffers = effectDescriptor._commandBuffers;
+
+    if (!Vulkan::resetCommandBuffers(context, commandBuffers))
+        return false;
+
+    // do a basic recording of the command buffers
+    for (unsigned int i = 0; i < (unsigned int)commandBuffers.size(); i++)
+    {
+        VkCommandBufferBeginInfo beginInfo;
+        memset(&beginInfo, 0, sizeof(VkCommandBufferBeginInfo));
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+        const VkResult beginCommandBufferResult = vkBeginCommandBuffer(commandBuffers[i], &beginInfo);
+        assert(beginCommandBufferResult == VK_SUCCESS);
+        if (beginCommandBufferResult != VK_SUCCESS)
+        {
+            SDL_LogError(0, "call to vkBeginCommandBuffer failed, i=%d\n", i);
+            return false;
+        }
+
+        VkRenderPassBeginInfo renderPassBeginInfo;
+        memset(&renderPassBeginInfo, 0, sizeof(VkRenderPassBeginInfo));
+        renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassBeginInfo.renderPass = context._renderPass;
+        renderPassBeginInfo.framebuffer = context._frameBuffers[i];
+        renderPassBeginInfo.renderArea.offset = { 0,0 };
+        renderPassBeginInfo.renderArea.extent = context._swapChainSize;
+
+        const glm::vec4 bgColor = appDesc._backgroundClearColor();
+        VkClearValue clearColorValue[2];
+        clearColorValue[0].color = VkClearColorValue{ bgColor[0], bgColor[1], bgColor[2], bgColor[3] };
+        clearColorValue[1].depthStencil = VkClearDepthStencilValue{ 1.0f, 0 };
+
+        renderPassBeginInfo.clearValueCount = 2;
+        renderPassBeginInfo.pClearValues = &clearColorValue[0];
+
+        vkCmdBeginRenderPass(commandBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, effectDescriptor._pipeline);
+
+        std::vector<Vulkan::Mesh> & vulkanMeshes = effectDescriptor._meshes;
+        for (unsigned int meshCount = 0; meshCount < vulkanMeshes.size(); meshCount++)
+        {
+            VkBuffer vertexBuffer[] = { vulkanMeshes[meshCount]._vertexBuffer._buffer };
+            VkDeviceSize offsets[] = { 0 };
+
+            vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, &vertexBuffer[0], offsets);
+            vkCmdBindIndexBuffer(commandBuffers[i], vulkanMeshes[meshCount]._indexBuffer._buffer, 0, VK_INDEX_TYPE_UINT16);
+
+            vkCmdBindDescriptorSets(commandBuffers[i],
+                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                effectDescriptor._pipelineLayout,
+                0,
+                1,
+                &vulkanMeshes[meshCount]._descriptorSets[i],
+                0,
+                nullptr);
+
+            vkCmdDrawIndexed(commandBuffers[i], vulkanMeshes[meshCount]._numIndices, 1, 0, 0, 0);
+
+        }
+        vkCmdEndRenderPass(commandBuffers[i]);
+
+        const VkResult endCommandBufferResult = vkEndCommandBuffer(commandBuffers[i]);
+        assert(endCommandBufferResult == VK_SUCCESS);
+        if (endCommandBufferResult != VK_SUCCESS)
+        {
+            SDL_LogError(0, "Call to vkEndCommandBuffer failed (i=%d)\n", i);
+            return false;
+        }
+    }
+
+    return true;
+}
+
 
 void render(Vulkan::AppDescriptor & appDesc, Vulkan::Context & context, bool recreateSwapChain)
 {
@@ -102,18 +178,27 @@ void render(Vulkan::AppDescriptor & appDesc, Vulkan::Context & context, bool rec
     VkSubmitInfo submitInfo;
     memset(&submitInfo, 0, sizeof(VkSubmitInfo));
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    constexpr VkPipelineStageFlags stageFlags[]{ VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    constexpr VkPipelineStageFlags stageFlags[]{ VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = &context._imageAvailableSemaphores[currentFrame];
     submitInfo.pWaitDstStageMask = stageFlags;
 
-    VkCommandBuffer commandBuffers[]
-    {
-        context._commandBuffers[currentFrame],
-    };
+    static std::vector<VkCommandBuffer> commandBuffers;
+    commandBuffers.clear();
 
-    submitInfo.commandBufferCount = sizeof(commandBuffers)/sizeof(VkCommandBuffer);
-    submitInfo.pCommandBuffers = commandBuffers;
+    for(size_t i= 0 ; i < context._effects.size() ; i++)
+    {
+        Vulkan::EffectDescriptor & effect = context._effects[i];
+        std::vector<VkCommandBuffer> & effectCommandBuffers = effect._commandBuffers;
+        for(size_t j=0 ; j < commandBuffers.size() ; j++)
+        {
+            VkCommandBuffer & effectCommandBuffer = effectCommandBuffers[j];
+            commandBuffers.push_back(effectCommandBuffer);
+        }
+    }
+
+    submitInfo.commandBufferCount = uint32_t(commandBuffers.size()/sizeof(VkCommandBuffer));
+    submitInfo.pCommandBuffers = &commandBuffers[0];
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = &context._renderFinishedSemaphores[currentFrame];
 
@@ -146,7 +231,7 @@ void render(Vulkan::AppDescriptor & appDesc, Vulkan::Context & context, bool rec
 }
 
 
-void modifyGraphicsPipelineInfo(Vulkan::VkGraphicsPipelineCreateInfoDescriptor& createInfo, unsigned int index)
+void modifyGraphicsPipelineInfo(Vulkan::VkGraphicsPipelineCreateInfoDescriptor& createInfo)
 {
     createInfo._rasterizerCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
 
@@ -197,14 +282,10 @@ int main(int argc, char *argv[])
 
     std::vector<Vulkan::Shader> shaders =
     {
-        {"triangle_vert.spv", Vulkan::ShaderType::Vertex},
-        {"triangle_frag.spv", Vulkan::ShaderType::Fragment},
+        {"triangle_vert.spv", VK_SHADER_STAGE_VERTEX_BIT },
+        {"triangle_frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT },
     };
     readShaders(shaders);
-    appDesc._shaders = shaders;
-
-    appDesc._numGraphicsPipelines = 1;
-
 
     glm::vec3 camPos{ 0,0,8 };
     glm::vec3 camDir{ 0,0,-1 };
@@ -234,9 +315,6 @@ int main(int argc, char *argv[])
         return rVal;
     };
 
-    appDesc._graphicsPipelineCreationCallback = [](Vulkan::VkGraphicsPipelineCreateInfoDescriptor& createInfo, unsigned int index) {
-        modifyGraphicsPipelineInfo(createInfo, index); };
-
     appDesc._updateFunction = [&totalRot](float timePassed, float deltaTime)
     {
         glm::quat xRot = glm::rotate(timePassed * 0.8f * glm::half_pi<float>(), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -255,7 +333,27 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    // raytracer object
     RayTracer tracer(appDesc, context);
+
+    Vulkan::EffectDescriptor squareEffect;
+    if(Vulkan::initEffectDescriptor(appDesc, context, modifyGraphicsPipelineInfo, squareEffect))
+    {
+        squareEffect._meshes = tracer._vulkanMeshes;
+        squareEffect._recordCommandBuffers = recordStandardCommandBuffers;
+
+        if (!shaders.empty())
+        {
+            bool createShaderModulesSuccess = Vulkan::createShaderModules(appDesc, context, shaders);
+            if (createShaderModulesSuccess)
+            {
+                SDL_LogError(0, "Failed to create shader modules\n");
+                return false;
+            }
+            squareEffect._shaderModules = shaders;
+        }
+    }
+
 
     // create the textured image
     constexpr int imageWidth = 200;

@@ -4,6 +4,8 @@
 #include "vulkan-setup/VulkanSetup.h"
 #include "Mesh.h"
 
+
+
 class RayTracer
 {
 public:
@@ -12,6 +14,8 @@ public:
     void update();
 
     ~RayTracer();
+
+    std::vector<Vulkan::Mesh> _vulkanMeshes;
 
 private:
     Vulkan::AppDescriptor & m_appInfo;

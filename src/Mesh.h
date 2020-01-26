@@ -15,6 +15,12 @@
 #include "vulkan-setup/VulkanSetup.h"
 #include "Defines.h"
 
+struct UniformBufferObject
+{
+    glm::mat4 _model;
+    glm::mat4 _view;
+    glm::mat4 _projection;
+};
 
 struct Transform
 {
