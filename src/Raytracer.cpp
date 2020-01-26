@@ -1,9 +1,10 @@
 #include "Raytracer.h"
 #include "MeshFactory.h"
 
-RayTracer::RayTracer(Vulkan::AppDescriptor & appInfo, Vulkan::Context & context)
+RayTracer::RayTracer(Vulkan::AppDescriptor & appInfo, Vulkan::Context & context, Vulkan::EffectDescriptor& effect)
 :m_appInfo(appInfo)
 ,m_context(context)
+,m_effect(effect)
 {
     createBackground();
 }
@@ -42,10 +43,10 @@ void RayTracer::createBackground()
     mesh->_name = std::string("Floor");
 
     void *userData = (void*)mesh.get();
-    Vulkan::Mesh vulkanMesh;
-    if(Vulkan::addMesh(m_appInfo, m_context, vertexData, indexData, userData, {sizeof(UniformBufferObject)}, vulkanMesh))
+    Vulkan::MeshPtr vulkanMesh(new Vulkan::Mesh());
+    if(Vulkan::addMesh(m_appInfo, m_context, vertexData, indexData, userData, m_effect, *vulkanMesh))
     {
-        std::vector<Vulkan::Mesh> meshes {vulkanMesh};
+        std::vector<Vulkan::MeshPtr> meshes {vulkanMesh};
         _vulkanMeshes = meshes;
     }
 

@@ -107,25 +107,25 @@ bool recordStandardCommandBuffers(Vulkan::AppDescriptor& appDesc, Vulkan::Contex
         vkCmdBeginRenderPass(commandBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
         vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, effectDescriptor._pipeline);
 
-        std::vector<Vulkan::Mesh> & vulkanMeshes = effectDescriptor._meshes;
+        std::vector<Vulkan::MeshPtr> & vulkanMeshes = effectDescriptor._meshes;
         for (unsigned int meshCount = 0; meshCount < vulkanMeshes.size(); meshCount++)
         {
-            VkBuffer vertexBuffer[] = { vulkanMeshes[meshCount]._vertexBuffer._buffer };
+            VkBuffer vertexBuffer[] = { vulkanMeshes[meshCount]->_vertexBuffer._buffer };
             VkDeviceSize offsets[] = { 0 };
 
             vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, &vertexBuffer[0], offsets);
-            vkCmdBindIndexBuffer(commandBuffers[i], vulkanMeshes[meshCount]._indexBuffer._buffer, 0, VK_INDEX_TYPE_UINT16);
+            vkCmdBindIndexBuffer(commandBuffers[i], vulkanMeshes[meshCount]->_indexBuffer._buffer, 0, VK_INDEX_TYPE_UINT16);
 
             vkCmdBindDescriptorSets(commandBuffers[i],
                 VK_PIPELINE_BIND_POINT_GRAPHICS,
                 effectDescriptor._pipelineLayout,
                 0,
-                1,
-                &vulkanMeshes[meshCount]._descriptorSets[i],
+                (uint32_t)vulkanMeshes[meshCount]->_descriptorSets.size(),
+                &vulkanMeshes[meshCount]->_descriptorSets[0],
                 0,
                 nullptr);
 
-            vkCmdDrawIndexed(commandBuffers[i], vulkanMeshes[meshCount]._numIndices, 1, 0, 0, 0);
+            vkCmdDrawIndexed(commandBuffers[i], vulkanMeshes[meshCount]->_numIndices, 1, 0, 0, 0);
 
         }
         vkCmdEndRenderPass(commandBuffers[i]);
@@ -188,9 +188,9 @@ void render(Vulkan::AppDescriptor & appDesc, Vulkan::Context & context, bool rec
 
     for(size_t i= 0 ; i < context._effects.size() ; i++)
     {
-        Vulkan::EffectDescriptor & effect = context._effects[i];
-        std::vector<VkCommandBuffer> & effectCommandBuffers = effect._commandBuffers;
-        for(size_t j=0 ; j < commandBuffers.size() ; j++)
+        Vulkan::EffectDescriptorPtr & effect = context._effects[i];
+        std::vector<VkCommandBuffer> & effectCommandBuffers = effect->_commandBuffers;
+        for(size_t j=0 ; j < effectCommandBuffers.size() ; j++)
         {
             VkCommandBuffer & effectCommandBuffer = effectCommandBuffers[j];
             commandBuffers.push_back(effectCommandBuffer);
@@ -333,26 +333,21 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // raytracer object
-    RayTracer tracer(appDesc, context);
 
-    Vulkan::EffectDescriptor squareEffect;
-    if(Vulkan::initEffectDescriptor(appDesc, context, modifyGraphicsPipelineInfo, squareEffect))
+    Vulkan::EffectDescriptorPtr squareEffect( new Vulkan::EffectDescriptor() );
+    squareEffect->_uniformBufferSizes.push_back((uint32_t)sizeof(UniformBufferObject));
+    squareEffect->_shaderModules = shaders;
+    if(!Vulkan::initEffectDescriptor(appDesc, context, modifyGraphicsPipelineInfo, *squareEffect))
     {
-        squareEffect._meshes = tracer._vulkanMeshes;
-        squareEffect._recordCommandBuffers = recordStandardCommandBuffers;
-
-        if (!shaders.empty())
-        {
-            bool createShaderModulesSuccess = Vulkan::createShaderModules(appDesc, context, shaders);
-            if (createShaderModulesSuccess)
-            {
-                SDL_LogError(0, "Failed to create shader modules\n");
-                return false;
-            }
-            squareEffect._shaderModules = shaders;
-        }
+        SDL_LogError(0, "Failed to init effect descriptor\n");
+        return 1;
     }
+
+    context._effects.push_back(squareEffect);
+    // raytracer object
+    RayTracer tracer(appDesc, context, *squareEffect);
+    squareEffect->_meshes = tracer._vulkanMeshes;
+    squareEffect->_recordCommandBuffers = recordStandardCommandBuffers;
 
 
     // create the textured image
