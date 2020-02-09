@@ -44,7 +44,7 @@ void RayTracer::createBackground()
 
     void *userData = (void*)mesh.get();
     Vulkan::MeshPtr vulkanMesh(new Vulkan::Mesh());
-    if(false && Vulkan::addMesh(m_appInfo, m_context, vertexData, indexData, userData, m_effect, *vulkanMesh))
+    if(Vulkan::addMesh(m_appInfo, m_context, vertexData, indexData, userData, m_effect, *vulkanMesh))
     {
         std::vector<Vulkan::MeshPtr> meshes {vulkanMesh};
         _vulkanMeshes = meshes;

@@ -115,16 +115,18 @@ bool recordStandardCommandBuffers(Vulkan::AppDescriptor& appDesc, Vulkan::Contex
 
         vkCmdBindVertexBuffers(commandBuffers[currentFrame], 0, 1, &vertexBuffer[0], offsets);
         vkCmdBindIndexBuffer(commandBuffers[currentFrame], vulkanMeshes[meshCount]->_indexBuffer._buffer, 0, VK_INDEX_TYPE_UINT16);
-
+        
         vkCmdBindDescriptorSets(commandBuffers[currentFrame],
             VK_PIPELINE_BIND_POINT_GRAPHICS,
             effectDescriptor._pipelineLayout,
             0,
-            (uint32_t)vulkanMeshes[meshCount]->_descriptorSets.size(),
+//            (uint32_t)vulkanMeshes[meshCount]->_descriptorSets.size(),
+            1,
             &vulkanMeshes[meshCount]->_descriptorSets[0],
             0,
             nullptr);
 
+            
         vkCmdDrawIndexed(commandBuffers[currentFrame], vulkanMeshes[meshCount]->_numIndices, 1, 0, 0, 0);
 
     }
@@ -192,7 +194,7 @@ void render(Vulkan::AppDescriptor & appDesc, Vulkan::Context & context, bool rec
         commandBuffers.push_back(effectCommandBuffer);
     }
 
-    submitInfo.commandBufferCount = uint32_t(commandBuffers.size()/sizeof(VkCommandBuffer));
+    submitInfo.commandBufferCount = commandBuffers.size();
 
     submitInfo.pCommandBuffers = commandBuffers.empty() ? VK_NULL_HANDLE : &commandBuffers[0];
     submitInfo.signalSemaphoreCount = 1;
