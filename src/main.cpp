@@ -68,75 +68,74 @@ namespace
 
 bool recordStandardCommandBuffers(Vulkan::AppDescriptor& appDesc, Vulkan::Context & context, Vulkan::EffectDescriptor & effectDescriptor)
 {
+
     std::vector<VkCommandBuffer>& commandBuffers = effectDescriptor._commandBuffers;
 
     if (!Vulkan::resetCommandBuffers(context, commandBuffers))
         return false;
 
-    // do a basic recording of the command buffers
-    for (unsigned int i = 0; i < (unsigned int)commandBuffers.size(); i++)
+    const uint32_t currentFrame = context._currentFrame;
+
+    VkCommandBufferBeginInfo beginInfo;
+    memset(&beginInfo, 0, sizeof(VkCommandBufferBeginInfo));
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+    const VkResult beginCommandBufferResult = vkBeginCommandBuffer(commandBuffers[currentFrame], &beginInfo);
+    assert(beginCommandBufferResult == VK_SUCCESS);
+    if (beginCommandBufferResult != VK_SUCCESS)
     {
-        VkCommandBufferBeginInfo beginInfo;
-        memset(&beginInfo, 0, sizeof(VkCommandBufferBeginInfo));
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-        const VkResult beginCommandBufferResult = vkBeginCommandBuffer(commandBuffers[i], &beginInfo);
-        assert(beginCommandBufferResult == VK_SUCCESS);
-        if (beginCommandBufferResult != VK_SUCCESS)
-        {
-            SDL_LogError(0, "call to vkBeginCommandBuffer failed, i=%d\n", i);
-            return false;
-        }
+        SDL_LogError(0, "call to vkBeginCommandBuffer failed, i=%d\n", currentFrame);
+        return false;
+    }
 
-        VkRenderPassBeginInfo renderPassBeginInfo;
-        memset(&renderPassBeginInfo, 0, sizeof(VkRenderPassBeginInfo));
-        renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassBeginInfo.renderPass = context._renderPass;
-        renderPassBeginInfo.framebuffer = context._frameBuffers[i];
-        renderPassBeginInfo.renderArea.offset = { 0,0 };
-        renderPassBeginInfo.renderArea.extent = context._swapChainSize;
+    VkRenderPassBeginInfo renderPassBeginInfo;
+    memset(&renderPassBeginInfo, 0, sizeof(VkRenderPassBeginInfo));
+    renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassBeginInfo.renderPass = context._renderPass;
+    renderPassBeginInfo.framebuffer = context._frameBuffers[currentFrame];
+    renderPassBeginInfo.renderArea.offset = { 0,0 };
+    renderPassBeginInfo.renderArea.extent = context._swapChainSize;
 
-        const glm::vec4 bgColor = appDesc._backgroundClearColor();
-        VkClearValue clearColorValue[2];
-        clearColorValue[0].color = VkClearColorValue{ bgColor[0], bgColor[1], bgColor[2], bgColor[3] };
-        clearColorValue[1].depthStencil = VkClearDepthStencilValue{ 1.0f, 0 };
+    const glm::vec4 bgColor = appDesc._backgroundClearColor();
+    VkClearValue clearColorValue[2];
+    clearColorValue[0].color = VkClearColorValue{ bgColor[0], bgColor[1], bgColor[2], bgColor[3] };
+    clearColorValue[1].depthStencil = VkClearDepthStencilValue{ 1.0f, 0 };
 
-        renderPassBeginInfo.clearValueCount = 2;
-        renderPassBeginInfo.pClearValues = &clearColorValue[0];
+    renderPassBeginInfo.clearValueCount = 1;
+    renderPassBeginInfo.pClearValues = &clearColorValue[0];
 
-        vkCmdBeginRenderPass(commandBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-        vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, effectDescriptor._pipeline);
+    vkCmdBeginRenderPass(commandBuffers[currentFrame], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, effectDescriptor._pipeline);
 
-        std::vector<Vulkan::MeshPtr> & vulkanMeshes = effectDescriptor._meshes;
-        for (unsigned int meshCount = 0; meshCount < vulkanMeshes.size(); meshCount++)
-        {
-            VkBuffer vertexBuffer[] = { vulkanMeshes[meshCount]->_vertexBuffer._buffer };
-            VkDeviceSize offsets[] = { 0 };
+    std::vector<Vulkan::MeshPtr>& vulkanMeshes = effectDescriptor._meshes;
+    for (unsigned int meshCount = 0; meshCount < vulkanMeshes.size(); meshCount++)
+    {
+        VkBuffer vertexBuffer[] = { vulkanMeshes[meshCount]->_vertexBuffer._buffer };
+        VkDeviceSize offsets[] = { 0 };
 
-            vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, &vertexBuffer[0], offsets);
-            vkCmdBindIndexBuffer(commandBuffers[i], vulkanMeshes[meshCount]->_indexBuffer._buffer, 0, VK_INDEX_TYPE_UINT16);
+        vkCmdBindVertexBuffers(commandBuffers[currentFrame], 0, 1, &vertexBuffer[0], offsets);
+        vkCmdBindIndexBuffer(commandBuffers[currentFrame], vulkanMeshes[meshCount]->_indexBuffer._buffer, 0, VK_INDEX_TYPE_UINT16);
 
-            vkCmdBindDescriptorSets(commandBuffers[i],
-                VK_PIPELINE_BIND_POINT_GRAPHICS,
-                effectDescriptor._pipelineLayout,
-                0,
-                (uint32_t)vulkanMeshes[meshCount]->_descriptorSets.size(),
-                &vulkanMeshes[meshCount]->_descriptorSets[0],
-                0,
-                nullptr);
+        vkCmdBindDescriptorSets(commandBuffers[currentFrame],
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            effectDescriptor._pipelineLayout,
+            0,
+            (uint32_t)vulkanMeshes[meshCount]->_descriptorSets.size(),
+            &vulkanMeshes[meshCount]->_descriptorSets[0],
+            0,
+            nullptr);
 
-            vkCmdDrawIndexed(commandBuffers[i], vulkanMeshes[meshCount]->_numIndices, 1, 0, 0, 0);
+        vkCmdDrawIndexed(commandBuffers[currentFrame], vulkanMeshes[meshCount]->_numIndices, 1, 0, 0, 0);
 
-        }
-        vkCmdEndRenderPass(commandBuffers[i]);
+    }
+    vkCmdEndRenderPass(commandBuffers[currentFrame]);
 
-        const VkResult endCommandBufferResult = vkEndCommandBuffer(commandBuffers[i]);
-        assert(endCommandBufferResult == VK_SUCCESS);
-        if (endCommandBufferResult != VK_SUCCESS)
-        {
-            SDL_LogError(0, "Call to vkEndCommandBuffer failed (i=%d)\n", i);
-            return false;
-        }
+    const VkResult endCommandBufferResult = vkEndCommandBuffer(commandBuffers[currentFrame]);
+    assert(endCommandBufferResult == VK_SUCCESS);
+    if (endCommandBufferResult != VK_SUCCESS)
+    {
+        SDL_LogError(0, "Call to vkEndCommandBuffer failed (i=%d)\n", currentFrame);
+        return false;
     }
 
     return true;
@@ -153,10 +152,9 @@ void render(Vulkan::AppDescriptor & appDesc, Vulkan::Context & context, bool rec
 //        earlyOut = true;
     }
 
-    const VkResult waitForFencesResult = vkWaitForFences(context._device, 1, &context._fences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
-    assert(waitForFencesResult == VK_SUCCESS);
-    const VkResult resetFencesResult = vkResetFences(context._device, 1, &context._fences[currentFrame]);
-    assert(resetFencesResult == VK_SUCCESS);
+//    const VkResult waitForFencesResult = vkWaitForFences(context._device, 1, &context._fences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
+    const VkResult waitForFencesResult = vkWaitForFences(context._device, 1, &context._fences[currentFrame], VK_TRUE, 1);
+//    assert(waitForFencesResult == VK_SUCCESS);
 
     if(earlyOut)
         return;
@@ -190,23 +188,24 @@ void render(Vulkan::AppDescriptor & appDesc, Vulkan::Context & context, bool rec
     {
         Vulkan::EffectDescriptorPtr & effect = context._effects[i];
         std::vector<VkCommandBuffer> & effectCommandBuffers = effect->_commandBuffers;
-        for(size_t j=0 ; j < effectCommandBuffers.size() ; j++)
-        {
-            VkCommandBuffer & effectCommandBuffer = effectCommandBuffers[j];
-            commandBuffers.push_back(effectCommandBuffer);
-        }
+        VkCommandBuffer& effectCommandBuffer = effectCommandBuffers[currentFrame];
+        commandBuffers.push_back(effectCommandBuffer);
     }
 
     submitInfo.commandBufferCount = uint32_t(commandBuffers.size()/sizeof(VkCommandBuffer));
-    submitInfo.pCommandBuffers = &commandBuffers[0];
+
+    submitInfo.pCommandBuffers = commandBuffers.empty() ? VK_NULL_HANDLE : &commandBuffers[0];
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = &context._renderFinishedSemaphores[currentFrame];
+    
+    const VkResult resetFencesResult = vkResetFences(context._device, 1, &context._fences[currentFrame]);
+    assert(resetFencesResult == VK_SUCCESS);
 
     VkResult submitResult = vkQueueSubmit(context._graphicsQueue, 1, &submitInfo, context._fences[currentFrame]);
     assert(submitResult == VK_SUCCESS);
     if(submitResult != VK_SUCCESS)
         return; // skip frame and try again later
-
+        
     VkPresentInfoKHR presentInfo;
     memset(&presentInfo, 0, sizeof(VkPresentInfoKHR));
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
