@@ -288,16 +288,6 @@ int main(int argc, char *argv[])
     };
     readShaders(shaders);
 
-    glm::vec3 camPos{ 0,0,8 };
-    glm::vec3 camDir{ 0,0,-1 };
-    glm::vec3 camUp{ 0,1,0 };
-    appDesc._cameraUpdateFunction = [&camPos, &camDir, &camUp](glm::vec3& pos, glm::vec3& lookat, glm::vec3& up)
-    {
-        pos = camPos;
-        lookat = camPos + camDir;
-        up = camUp;
-    };
-
 
     //    Mesh mesh = MeshFactory::createPlane(1.0f, 1.0f);
 
