@@ -293,30 +293,6 @@ int main(int argc, char *argv[])
 
     appDesc._backgroundClearColor = []() { return glm::vec4{ 0.2f, 0.2f, 0.2f, 1.0 }; };
 
-    glm::quat totalRot;
-    appDesc._updateModelMatrix = [&totalRot](const void* userData, float timePassed, float deltaTime)
-    {
-        glm::mat4 rVal;
-        if (userData != nullptr)
-        {
-            const Mesh* mesh = static_cast<const Mesh*>(userData);
-            rVal = mesh->getWorldMatrix();
-        }
-
-        return rVal;
-    };
-
-    appDesc._updateFunction = [&totalRot](float timePassed, float deltaTime)
-    {
-        glm::quat xRot = glm::rotate(timePassed * 0.8f * glm::half_pi<float>(), glm::vec3(1.0f, 0.0f, 0.0f));
-        glm::quat yRot = glm::rotate(timePassed * 0.6f * glm::half_pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
-        glm::quat zRot = glm::rotate(timePassed * glm::half_pi<float>(), glm::vec3(0.0f, 0.0f, 1.0f));
-        //        totalRot = xRot * yRot * zRot;
-        return true;
-    };
-
-
-
     Vulkan::Context context;
     if(!Vulkan::handleVulkanSetup(appDesc, context))
     {
@@ -380,14 +356,11 @@ int main(int argc, char *argv[])
         snprintf(windowTitleBuffer, WINDOW_TITLE_BUFFER_SIZE, "%s. FPS: %d", appName.c_str(), fpsAverage);
         SDL_SetWindowTitle(window, windowTitleBuffer);
 
-        gameIsRunning = Vulkan::update(appDesc, context, context._currentFrame);
-        if (gameIsRunning)
-        {
-            tracer.update();
-            render(appDesc, context, recreateSwapChain);
-            SDL_UpdateWindowSurface(appDesc._window);
-            recreateSwapChain = false;
-        }
+        tracer.update();
+        Vulkan::updateUniforms(appDesc, context, context._currentFrame);
+        render(appDesc, context, recreateSwapChain);
+        SDL_UpdateWindowSurface(appDesc._window);
+        recreateSwapChain = false;
 
         SDL_Event event;
         while (SDL_PollEvent(&event) > 0)
