@@ -195,7 +195,7 @@ void render(Vulkan::AppDescriptor & appDesc, Vulkan::Context & context, bool rec
         commandBuffers.push_back(effectCommandBuffer);
     }
 
-    submitInfo.commandBufferCount = commandBuffers.size();
+    submitInfo.commandBufferCount = (uint32_t)commandBuffers.size();
 
     submitInfo.pCommandBuffers = commandBuffers.empty() ? VK_NULL_HANDLE : &commandBuffers[0];
     submitInfo.signalSemaphoreCount = 1;
@@ -271,7 +271,7 @@ namespace
         Vulkan::BufferDescriptor stagingBuffer;
         const VkDeviceSize size = sizeof(T) * width * height;
         if(!Vulkan::createBuffer(context,
-                                 size,
+                                 size*10,
                                  VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                  stagingBuffer))
@@ -280,7 +280,11 @@ namespace
             return false;
         }
 
-        stagingBuffer.fill(context._device, reinterpret_cast<const void*>(pixels), size);
+        if(!stagingBuffer.fill(context._device, reinterpret_cast<const void*>(pixels), size))
+        {
+            SDL_LogError(0, "createImage - Failed to fill staging buffer");
+            return false;
+        }
 
         if(!Vulkan::createImage(context,
                             width,
