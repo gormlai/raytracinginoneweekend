@@ -96,7 +96,7 @@ bool recordStandardCommandBuffers(Vulkan::AppDescriptor& appDesc, Vulkan::Contex
     renderPassBeginInfo.renderArea.offset = { 0,0 };
     renderPassBeginInfo.renderArea.extent = context._swapChainSize;
 
-    const glm::vec4 bgColor = appDesc._backgroundClearColor();
+    constexpr glm::vec4 bgColor =glm::vec4{ 0.2f, 0.2f, 0.2f, 1.0 };
     VkClearValue clearColorValue[2];
     clearColorValue[0].color = VkClearColorValue{ bgColor[0], bgColor[1], bgColor[2], bgColor[3] };
     clearColorValue[1].depthStencil = VkClearDepthStencilValue{ 1.0f, 0 };
@@ -290,8 +290,6 @@ int main(int argc, char *argv[])
 
 
     //    Mesh mesh = MeshFactory::createPlane(1.0f, 1.0f);
-
-    appDesc._backgroundClearColor = []() { return glm::vec4{ 0.2f, 0.2f, 0.2f, 1.0 }; };
 
     Vulkan::Context context;
     if(!Vulkan::handleVulkanSetup(appDesc, context))
