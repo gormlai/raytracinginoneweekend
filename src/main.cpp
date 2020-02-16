@@ -271,7 +271,7 @@ namespace
         Vulkan::BufferDescriptor stagingBuffer;
         const VkDeviceSize size = sizeof(T) * width * height;
         if(!Vulkan::createBuffer(context,
-                                 size*10,
+                                 size,
                                  VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                  stagingBuffer))
@@ -320,7 +320,7 @@ namespace
         }
 
 
-        if(Vulkan::transitionImageLayout(context,
+        if(!Vulkan::transitionImageLayout(context,
                                       result,
                                       VK_FORMAT_R8G8B8A8_SRGB,
                                       VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -331,6 +331,32 @@ namespace
         }
 
         return true;
+    }
+
+    bool createSampler(Vulkan::Context& context, VkSampler& sampler)
+    {
+        VkSamplerCreateInfo samplerCreateInfo = { };
+        samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
+        samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
+        samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerCreateInfo.anisotropyEnable = VK_FALSE;
+        samplerCreateInfo.maxAnisotropy = 1;
+        samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
+        samplerCreateInfo.unnormalizedCoordinates = VK_FALSE;
+        samplerCreateInfo.compareEnable = VK_FALSE;
+        samplerCreateInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+        samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        samplerCreateInfo.mipLodBias = 0;
+        samplerCreateInfo.minLod = 0.0f;
+        samplerCreateInfo.maxLod = 0.0f;
+
+        VkResult createSamplerResult = vkCreateSampler(context._device, &samplerCreateInfo, VK_NULL_HANDLE, &sampler);
+        assert(createSamplerResult == VK_SUCCESS);
+
+        return createSamplerResult == VK_SUCCESS;
     }
 
 }
@@ -409,6 +435,27 @@ int main(int argc, char *argv[])
                                                       imageWidth,
                                                       imageHeight,
                                                       pixelImage);
+    if (!pixelsCreated)
+    {
+        SDL_LogError(0, "main - could not create pixelImage\n");
+        return 1;
+    }
+
+    VkImageView pixelImageView;
+    const bool pixelsImageViewCreated = Vulkan::createImageView(context, pixelImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, pixelImageView);
+    if (!pixelsImageViewCreated)
+    {
+        SDL_LogError(0, "main - could not create pixelImageView\n");
+        return 1;
+    }
+
+    VkSampler pixelImageSampler;
+    const bool samplerCreated = createSampler(context, pixelImageSampler);
+    if(!samplerCreated)
+    {
+        SDL_LogError(0, "main - failed to create sampler\n");
+        return 2;
+    }
 
 	CircularArray<60, double> fpsCounter;
     bool gameIsRunning = true;
