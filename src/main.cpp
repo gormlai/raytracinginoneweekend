@@ -400,6 +400,7 @@ int main(int argc, char *argv[])
     Vulkan::EffectDescriptorPtr squareEffect( new Vulkan::EffectDescriptor() );
     squareEffect->_uniformBufferSizes.push_back((uint32_t)sizeof(UniformBufferObject));
     squareEffect->_shaderModules = shaders;
+    squareEffect->_numFragmentStageImages = 1;
     if(!Vulkan::initEffectDescriptor(appDesc, context, modifyGraphicsPipelineInfo, *squareEffect))
     {
         SDL_LogError(0, "Failed to init effect descriptor\n");
