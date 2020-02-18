@@ -458,6 +458,13 @@ int main(int argc, char *argv[])
         return 2;
     }
 
+    const bool imagesBound = squareEffect->bindImageViewsAndSamplers(context, std::vector<VkImageView>{ pixelImageView }, { pixelImageSampler });
+    if (!imagesBound)
+    {
+        SDL_LogError(0, "main - failed to bind image views and samplers\n");
+        return 2;
+    }
+
 	CircularArray<60, double> fpsCounter;
     bool gameIsRunning = true;
     while (gameIsRunning)
