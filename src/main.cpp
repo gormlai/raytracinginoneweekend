@@ -123,7 +123,7 @@ bool recordStandardCommandBuffers(Vulkan::AppDescriptor& appDesc, Vulkan::Contex
             0,
 //            (uint32_t)vulkanMeshes[meshCount]->_descriptorSets.size(),
             1,
-            &vulkanMeshes[meshCount]->_descriptorSets[0],
+            &effectDescriptor._descriptorSets[0],
             0,
             nullptr);
 
@@ -401,6 +401,7 @@ int main(int argc, char *argv[])
     squareEffect->_uniformBufferSizes.push_back((uint32_t)sizeof(UniformBufferObject));
     squareEffect->_shaderModules = shaders;
     squareEffect->_numFragmentStageImages = 1;
+    squareEffect->_uniformBuffers.resize(context._rawImages.size() * squareEffect->_uniformBufferSizes.size());
     if(!Vulkan::initEffectDescriptor(appDesc, context, modifyGraphicsPipelineInfo, *squareEffect))
     {
         SDL_LogError(0, "Failed to init effect descriptor\n");
@@ -458,12 +459,41 @@ int main(int argc, char *argv[])
         return 2;
     }
 
+
+
     const bool imagesBound = squareEffect->bindImageViewsAndSamplers(context, std::vector<VkImageView>{ pixelImageView }, { pixelImageSampler });
     if (!imagesBound)
     {
         SDL_LogError(0, "main - failed to bind image views and samplers\n");
         return 2;
     }
+
+    squareEffect->_updateUniform = [context](unsigned int uniformIndex, std::vector<unsigned char>& receiver)
+    {
+        constexpr size_t dataSizeNeeded = sizeof(UniformBufferObject);
+        switch (uniformIndex)
+        {
+        case 0:
+        {
+            glm::vec3 camPos{ 0,0,8 };
+            glm::vec3 camDir{ 0,0,-1 };
+            glm::vec3 camUp{ 0,1,0 };
+            UniformBufferObject ubo;
+            ubo._view = glm::lookAt(camPos, camPos + camDir, camUp);
+            ubo._projection = glm::perspective(glm::radians(45.0f), context._swapChainSize.width / (float)context._swapChainSize.height, 0.1f, 1000.0f);
+            ubo._model = glm::identity<glm::mat4>();
+
+            if (receiver.size() < dataSizeNeeded)
+                receiver.resize(dataSizeNeeded);
+            memcpy(&receiver[0], reinterpret_cast<const void*>(&ubo), dataSizeNeeded);
+            break;
+        }
+        }
+        return (unsigned int)dataSizeNeeded;
+    };
+
+
+
 
 	CircularArray<60, double> fpsCounter;
     bool gameIsRunning = true;

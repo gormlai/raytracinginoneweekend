@@ -52,32 +52,6 @@ void RayTracer::createBackground()
     if (Vulkan::addMesh(m_appInfo, m_context, vertexData, indexData, userData, m_effect, *vulkanMesh))
     {
         std::vector<Vulkan::MeshPtr> meshes{ vulkanMesh };
-        for (Vulkan::MeshPtr mesh : meshes)
-        {
-            mesh->_updateUniform = [this](unsigned int uniformIndex, std::vector<unsigned char>& receiver)
-            {
-                constexpr size_t dataSizeNeeded = sizeof(UniformBufferObject);
-                switch (uniformIndex)
-                {
-                case 0:
-                {
-                    glm::vec3 camPos{ 0,0,8 };
-                    glm::vec3 camDir{ 0,0,-1 };
-                    glm::vec3 camUp{ 0,1,0 };
-                    UniformBufferObject ubo;
-                    ubo._view = glm::lookAt(camPos, camPos + camDir, camUp);
-                    ubo._projection = glm::perspective(glm::radians(45.0f), m_context._swapChainSize.width / (float)m_context._swapChainSize.height, 0.1f, 1000.0f);
-                    ubo._model = glm::identity<glm::mat4>();
-
-                    if (receiver.size() < dataSizeNeeded)
-                        receiver.resize(dataSizeNeeded);
-                    memcpy(&receiver[0], reinterpret_cast<const void*>(&ubo), dataSizeNeeded);
-                    break;
-                }
-                }
-                return (unsigned int)dataSizeNeeded;
-            };
-        }
         _vulkanMeshes = meshes;
     }
 
