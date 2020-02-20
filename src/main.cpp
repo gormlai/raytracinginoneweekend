@@ -15,7 +15,10 @@ namespace
 {
 	constexpr unsigned int windowWidth = 800;
 	constexpr unsigned int windowHeight = 600;
-    
+
+    constexpr unsigned int textureWidth = 256;
+    constexpr unsigned int textureHeight = 256;
+
     SDL_Window * initSDL(const std::string & appName)
     {
         SDL_Window * window = nullptr;
@@ -67,7 +70,7 @@ namespace
 }
 
 
-bool recordStandardCommandBuffers(Vulkan::AppDescriptor& appDesc, Vulkan::Context & context, Vulkan::EffectDescriptor & effectDescriptor)
+bool recordStandardCommandBuffersForSquare(Vulkan::AppDescriptor& appDesc, Vulkan::Context & context, Vulkan::EffectDescriptor & effectDescriptor)
 {
 
     std::vector<VkCommandBuffer>& commandBuffers = effectDescriptor._commandBuffers;
@@ -132,6 +135,54 @@ bool recordStandardCommandBuffers(Vulkan::AppDescriptor& appDesc, Vulkan::Contex
 
     }
     vkCmdEndRenderPass(commandBuffers[currentFrame]);
+
+    const VkResult endCommandBufferResult = vkEndCommandBuffer(commandBuffers[currentFrame]);
+    assert(endCommandBufferResult == VK_SUCCESS);
+    if (endCommandBufferResult != VK_SUCCESS)
+    {
+        SDL_LogError(0, "Call to vkEndCommandBuffer failed (i=%d)\n", currentFrame);
+        return false;
+    }
+
+    return true;
+}
+
+bool recordStandardCommandBuffersForCompute(Vulkan::AppDescriptor& appDesc, Vulkan::Context & context, Vulkan::EffectDescriptor & effectDescriptor)
+{
+
+    std::vector<VkCommandBuffer>& commandBuffers = effectDescriptor._commandBuffers;
+
+    if (!Vulkan::resetCommandBuffers(context, commandBuffers))
+        return false;
+
+    const uint32_t currentFrame = context._currentFrame;
+
+    VkCommandBufferBeginInfo beginInfo;
+    memset(&beginInfo, 0, sizeof(VkCommandBufferBeginInfo));
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+    const VkResult beginCommandBufferResult = vkBeginCommandBuffer(commandBuffers[currentFrame], &beginInfo);
+    assert(beginCommandBufferResult == VK_SUCCESS);
+    if (beginCommandBufferResult != VK_SUCCESS)
+    {
+        SDL_LogError(0, "call to vkBeginCommandBuffer failed, i=%d\n", currentFrame);
+        return false;
+    }
+
+
+    vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_COMPUTE, effectDescriptor._pipeline);
+
+    vkCmdBindDescriptorSets(commandBuffers[currentFrame],
+                            VK_PIPELINE_BIND_POINT_GRAPHICS,
+                            effectDescriptor._pipelineLayout,
+                            0,
+                            //            (uint32_t)vulkanMeshes[meshCount]->_descriptorSets.size(),
+                            1,
+                            &effectDescriptor._descriptorSets[0],
+                            0,
+                            nullptr);
+
+    vkCmdDispatch(commandBuffers[0], textureWidth, textureHeight, 1);
 
     const VkResult endCommandBufferResult = vkEndCommandBuffer(commandBuffers[currentFrame]);
     assert(endCommandBufferResult == VK_SUCCESS);
@@ -233,7 +284,7 @@ void render(Vulkan::AppDescriptor & appDesc, Vulkan::Context & context, bool rec
 }
 
 
-void modifyGraphicsPipelineInfo(Vulkan::VkGraphicsPipelineCreateInfoDescriptor& createInfo)
+void modifyGraphicsPipelineInfoForSquare(Vulkan::VkGraphicsPipelineCreateInfoDescriptor& createInfo)
 {
     createInfo._rasterizerCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
 
@@ -262,6 +313,37 @@ void modifyGraphicsPipelineInfo(Vulkan::VkGraphicsPipelineCreateInfoDescriptor& 
     createInfo._vertexInputAttributeDescriptions.push_back(attributes[1]);
     createInfo._vertexInputAttributeDescriptions.push_back(attributes[2]);
 }
+
+void modifyGraphicsPipelineInfoForCompute(Vulkan::VkGraphicsPipelineCreateInfoDescriptor& createInfo)
+{
+    createInfo._rasterizerCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
+
+    VkVertexInputBindingDescription bindingDescription;
+    memset(&bindingDescription, 0, sizeof(VkVertexInputBindingDescription));
+
+    bindingDescription.binding = 0;
+    bindingDescription.stride = sizeof(MeshVertex);
+    bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    createInfo._vertexInputBindingDescriptions.push_back(bindingDescription);
+
+    std::array<VkVertexInputAttributeDescription, 3> attributes = {};
+    attributes[0].binding = 0;
+    attributes[0].location = 0;
+    attributes[0].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    attributes[0].offset = 0;
+    attributes[1].binding = 0;
+    attributes[1].location = 1;
+    attributes[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    attributes[1].offset = sizeof(glm::vec4);
+    attributes[2].binding = 0;
+    attributes[2].location = 2;
+    attributes[2].format = VK_FORMAT_R32G32_SFLOAT;
+    attributes[2].offset = sizeof(glm::vec4) + sizeof(glm::vec4);
+    createInfo._vertexInputAttributeDescriptions.push_back(attributes[0]);
+    createInfo._vertexInputAttributeDescriptions.push_back(attributes[1]);
+    createInfo._vertexInputAttributeDescriptions.push_back(attributes[2]);
+}
+
 
 namespace
 {
@@ -379,13 +461,18 @@ int main(int argc, char *argv[])
 #endif
     appDesc._window = window;
 
-    std::vector<Vulkan::Shader> shaders =
+    std::vector<Vulkan::Shader> squareShaders =
     {
         {"triangle_vert.spv", VK_SHADER_STAGE_VERTEX_BIT },
         {"triangle_frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT },
     };
-    readShaders(shaders);
+    readShaders(squareShaders);
 
+    std::vector<Vulkan::Shader> computeShaders =
+    {
+        {"triangle_comp.spv", VK_SHADER_STAGE_COMPUTE_BIT },
+    };
+    readShaders(computeShaders);
 
     //    Mesh mesh = MeshFactory::createPlane(1.0f, 1.0f);
 
@@ -399,25 +486,36 @@ int main(int argc, char *argv[])
 
     Vulkan::EffectDescriptorPtr squareEffect( new Vulkan::EffectDescriptor() );
     squareEffect->_uniformBufferSizes.push_back((uint32_t)sizeof(UniformBufferObject));
-    squareEffect->_shaderModules = shaders;
+    squareEffect->_shaderModules = squareShaders;
     squareEffect->_numFragmentStageImages = 1;
     squareEffect->_uniformBuffers.resize(context._rawImages.size() * squareEffect->_uniformBufferSizes.size());
-    if(!Vulkan::initEffectDescriptor(appDesc, context, modifyGraphicsPipelineInfo, *squareEffect))
+    squareEffect->_recordCommandBuffers = recordStandardCommandBuffersForSquare;
+    if(!Vulkan::initEffectDescriptor(appDesc, context, modifyGraphicsPipelineInfoForSquare, *squareEffect))
     {
         SDL_LogError(0, "Failed to init effect descriptor\n");
         return 1;
     }
-
     context._effects.push_back(squareEffect);
     // raytracer object
     RayTracer tracer(appDesc, context, *squareEffect);
     squareEffect->_meshes = tracer._vulkanMeshes;
-    squareEffect->_recordCommandBuffers = recordStandardCommandBuffers;
+
+    Vulkan::EffectDescriptorPtr rayTraceEffect( new Vulkan::EffectDescriptor() );
+    rayTraceEffect->_uniformBufferSizes.push_back((uint32_t)sizeof(UniformBufferObject));
+    rayTraceEffect->_shaderModules = computeShaders;
+    rayTraceEffect->_uniformBuffers.resize(context._rawImages.size() * rayTraceEffect->_uniformBufferSizes.size());
+    rayTraceEffect->_recordCommandBuffers = recordStandardCommandBuffersForCompute;
+    if(!Vulkan::initEffectDescriptor(appDesc, context, modifyGraphicsPipelineInfoForCompute, *rayTraceEffect))
+    {
+        SDL_LogError(0, "Failed to init effect descriptor\n");
+        return 1;
+    }
+    context._effects.push_back(rayTraceEffect);
 
 
     // create the textured image
-    constexpr int imageWidth = 200;
-    constexpr int imageHeight = 150;
+    constexpr int imageWidth = textureWidth;
+    constexpr int imageHeight = textureHeight;
     static glm::vec4 pixelBuffer[imageWidth*imageHeight];
     for(int y = imageHeight-1 ; y>=0 ; y--)
     {
@@ -460,8 +558,6 @@ int main(int argc, char *argv[])
         SDL_LogError(0, "main - failed to create sampler\n");
         return 2;
     }
-
-
 
     const bool imagesBound = squareEffect->bindImageViewsAndSamplers(context, std::vector<VkImageView>{ pixelImageView }, { pixelImageSampler });
     if (!imagesBound)
