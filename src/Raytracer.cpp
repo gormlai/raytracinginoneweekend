@@ -32,7 +32,7 @@ void RayTracer::createBackground()
         return;
 
     std::vector<unsigned char> indexData, vertexData;
-    const std::vector<MeshVertex> & vertices = mesh->getVertices();
+    std::vector<MeshVertex> vertices = mesh->getVertices();
     const std::vector<uint16_t> & indices = mesh->getIndices();
 
     indexData.resize(indices.size() * sizeof(uint16_t));

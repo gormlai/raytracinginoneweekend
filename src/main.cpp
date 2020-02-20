@@ -257,7 +257,7 @@ void modifyGraphicsPipelineInfo(Vulkan::VkGraphicsPipelineCreateInfoDescriptor& 
     attributes[2].binding = 0;
     attributes[2].location = 2;
     attributes[2].format = VK_FORMAT_R32G32_SFLOAT;
-    attributes[2].offset = sizeof(glm::vec4) + sizeof(glm::vec2);
+    attributes[2].offset = sizeof(glm::vec4) + sizeof(glm::vec4);
     createInfo._vertexInputAttributeDescriptions.push_back(attributes[0]);
     createInfo._vertexInputAttributeDescriptions.push_back(attributes[1]);
     createInfo._vertexInputAttributeDescriptions.push_back(attributes[2]);
@@ -266,7 +266,7 @@ void modifyGraphicsPipelineInfo(Vulkan::VkGraphicsPipelineCreateInfoDescriptor& 
 namespace
 {
     template<typename T>
-    bool createImage(Vulkan::Context & context, const T * pixels, const unsigned int width, const unsigned int height, VkImage & result)
+    bool createImage(Vulkan::Context & context, const T * pixels, const unsigned int width, const unsigned int height, VkFormat format, VkImage & result)
     {
         Vulkan::BufferDescriptor stagingBuffer;
         const VkDeviceSize size = sizeof(T) * width * height;
@@ -290,7 +290,7 @@ namespace
                             width,
                             height,
                             1,
-                            VK_FORMAT_R8G8B8A8_SRGB,
+                            format,
                             VK_IMAGE_TILING_OPTIMAL,
                             VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                             result))
@@ -300,7 +300,7 @@ namespace
         }
 
         if(!Vulkan::transitionImageLayout(context, result,
-                                      VK_FORMAT_R8G8B8A8_SRGB,
+                                      format,
                                       VK_IMAGE_LAYOUT_UNDEFINED,
                                       VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL))
         {
@@ -322,7 +322,7 @@ namespace
 
         if(!Vulkan::transitionImageLayout(context,
                                       result,
-                                      VK_FORMAT_R8G8B8A8_SRGB,
+                                      format,
                                       VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                       VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL))
         {
@@ -418,24 +418,26 @@ int main(int argc, char *argv[])
     // create the textured image
     constexpr int imageWidth = 200;
     constexpr int imageHeight = 150;
-    static glm::vec4 pixelBuffer[imageWidth][imageHeight];
+    static glm::vec4 pixelBuffer[imageWidth*imageHeight];
     for(int y = imageHeight-1 ; y>=0 ; y--)
     {
         for(int x = 0 ; x < imageWidth ; x++)
         {
             float red = (float)x / imageWidth;
             float green = (float)y / imageHeight;
-            float blue = 0.2f;
+            float blue = 1.0f;
             float alpha = 1.0f;
-            pixelBuffer[x][y] = glm::vec4{red, green, blue, alpha};
+            pixelBuffer[y * imageWidth + x] = glm::vec4{ red, green, blue, alpha };
         }
     }
 
+    VkFormat imageFormat = VK_FORMAT_R32G32B32A32_SFLOAT;
     VkImage pixelImage;
     const bool pixelsCreated = createImage<glm::vec4>(context,
                                                       reinterpret_cast<glm::vec4*>(pixelBuffer),
                                                       imageWidth,
                                                       imageHeight,
+                                                      imageFormat,
                                                       pixelImage);
     if (!pixelsCreated)
     {
@@ -444,7 +446,7 @@ int main(int argc, char *argv[])
     }
 
     VkImageView pixelImageView;
-    const bool pixelsImageViewCreated = Vulkan::createImageView(context, pixelImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, pixelImageView);
+    const bool pixelsImageViewCreated = Vulkan::createImageView(context, pixelImage, imageFormat, VK_IMAGE_ASPECT_COLOR_BIT, pixelImageView);
     if (!pixelsImageViewCreated)
     {
         SDL_LogError(0, "main - could not create pixelImageView\n");
@@ -475,7 +477,7 @@ int main(int argc, char *argv[])
         {
         case 0:
         {
-            glm::vec3 camPos{ 0,0,8 };
+            glm::vec3 camPos{ 0,0,2 };
             glm::vec3 camDir{ 0,0,-1 };
             glm::vec3 camUp{ 0,1,0 };
             UniformBufferObject ubo;
