@@ -173,7 +173,7 @@ bool recordStandardCommandBuffersForCompute(Vulkan::AppDescriptor& appDesc, Vulk
     vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_COMPUTE, effectDescriptor._pipeline);
 
     vkCmdBindDescriptorSets(commandBuffers[currentFrame],
-                            VK_PIPELINE_BIND_POINT_GRAPHICS,
+        VK_PIPELINE_BIND_POINT_COMPUTE,
                             effectDescriptor._pipelineLayout,
                             0,
                             //            (uint32_t)vulkanMeshes[meshCount]->_descriptorSets.size(),
@@ -182,7 +182,7 @@ bool recordStandardCommandBuffersForCompute(Vulkan::AppDescriptor& appDesc, Vulk
                             0,
                             nullptr);
 
-    vkCmdDispatch(commandBuffers[0], textureWidth, textureHeight, 1);
+    vkCmdDispatch(commandBuffers[currentFrame], textureWidth, textureHeight, 1);
 
     const VkResult endCommandBufferResult = vkEndCommandBuffer(commandBuffers[currentFrame]);
     assert(endCommandBufferResult == VK_SUCCESS);
@@ -312,6 +312,10 @@ void modifyGraphicsPipelineInfoForSquare(Vulkan::VkGraphicsPipelineCreateInfoDes
     createInfo._vertexInputAttributeDescriptions.push_back(attributes[0]);
     createInfo._vertexInputAttributeDescriptions.push_back(attributes[1]);
     createInfo._vertexInputAttributeDescriptions.push_back(attributes[2]);
+}
+
+void modifyComputePipelineInfoForCompute(Vulkan::VkComputePipelineCreateInfoDescriptor & createInfo)
+{
 }
 
 void modifyGraphicsPipelineInfoForCompute(Vulkan::VkGraphicsPipelineCreateInfoDescriptor& createInfo)
@@ -489,6 +493,7 @@ int main(int argc, char *argv[])
     squareEffect->setShaderStageImageCount(Vulkan::ShaderStage::Fragment, 1);
     squareEffect->_shaderModules = squareShaders;
     squareEffect->_recordCommandBuffers = recordStandardCommandBuffersForSquare;
+    squareEffect->_name = "Square Effect";
     if(!Vulkan::initEffectDescriptor(appDesc, context, modifyGraphicsPipelineInfoForSquare, *squareEffect))
     {
         SDL_LogError(0, "Failed to init effect descriptor\n");
@@ -498,19 +503,19 @@ int main(int argc, char *argv[])
     // raytracer object
     RayTracer tracer(appDesc, context, *squareEffect);
     squareEffect->_meshes = tracer._vulkanMeshes;
-/*
+
     Vulkan::EffectDescriptorPtr rayTraceEffect( new Vulkan::EffectDescriptor() );
-    rayTraceEffect->_uniformBufferSizes.push_back((uint32_t)sizeof(UniformBufferObject));
+    rayTraceEffect->addUniformBuffer(context, Vulkan::ShaderStage::Compute, (uint32_t)sizeof(UniformBufferObject));
     rayTraceEffect->_shaderModules = computeShaders;
-    rayTraceEffect->_uniformBuffers.resize(context._rawImages.size() * rayTraceEffect->_uniformBufferSizes.size());
     rayTraceEffect->_recordCommandBuffers = recordStandardCommandBuffersForCompute;
-    if(!Vulkan::initEffectDescriptor(appDesc, context, modifyGraphicsPipelineInfoForCompute, *rayTraceEffect))
+    rayTraceEffect->_name = "RayTrace Effect";
+    if(!Vulkan::initEffectDescriptor(appDesc, context, modifyComputePipelineInfoForCompute, *rayTraceEffect))
     {
         SDL_LogError(0, "Failed to init effect descriptor\n");
         return 1;
     }
     context._effects.push_back(rayTraceEffect);
-    */
+    
 
     // create the textured image
     constexpr int imageWidth = textureWidth;
@@ -568,25 +573,57 @@ int main(int argc, char *argv[])
     squareEffect->_updateUniform = [context](Vulkan::ShaderStage stage, unsigned int uniformIndex, std::vector<unsigned char>& receiver)
     {
         size_t dataSizeNeeded = 0;
-        switch (uniformIndex)
+        switch (stage)
         {
-        case 0:
-        {
-            dataSizeNeeded = sizeof(UniformBufferObject);
-            glm::vec3 camPos{ 0,0,2 };
-            glm::vec3 camDir{ 0,0,-1 };
-            glm::vec3 camUp{ 0,1,0 };
-            UniformBufferObject ubo;
-            ubo._view = glm::lookAt(camPos, camPos + camDir, camUp);
-            ubo._projection = glm::perspective(glm::radians(45.0f), context._swapChainSize.width / (float)context._swapChainSize.height, 0.1f, 1000.0f);
-            ubo._model = glm::identity<glm::mat4>();
+            case Vulkan::ShaderStage::Vertex:
+            {
+                switch (uniformIndex)
+                {
+                    case 0:
+                    {
+                        dataSizeNeeded = sizeof(UniformBufferObject);
+                        glm::vec3 camPos{ 0,0,2 };
+                        glm::vec3 camDir{ 0,0,-1 };
+                        glm::vec3 camUp{ 0,1,0 };
+                        UniformBufferObject ubo;
+                        ubo._view = glm::lookAt(camPos, camPos + camDir, camUp);
+                        ubo._projection = glm::perspective(glm::radians(45.0f), context._swapChainSize.width / (float)context._swapChainSize.height, 0.1f, 1000.0f);
+                        ubo._model = glm::identity<glm::mat4>();
 
-            if (receiver.size() < dataSizeNeeded)
-                receiver.resize(dataSizeNeeded);
-            memcpy(&receiver[0], reinterpret_cast<const void*>(&ubo), dataSizeNeeded);
+                        if (receiver.size() < dataSizeNeeded)
+                            receiver.resize(dataSizeNeeded);
+                        memcpy(&receiver[0], reinterpret_cast<const void*>(&ubo), dataSizeNeeded);
+                        break;
+                    }
+                }
+            }
+            break;
+            case Vulkan::ShaderStage::Compute:
+            {
+                switch (uniformIndex)
+                {
+                case 0:
+                {
+                    dataSizeNeeded = sizeof(UniformBufferObject);
+                    glm::vec3 camPos{ 0,0,2 };
+                    glm::vec3 camDir{ 0,0,-1 };
+                    glm::vec3 camUp{ 0,1,0 };
+                    UniformBufferObject ubo;
+                    ubo._view = glm::lookAt(camPos, camPos + camDir, camUp);
+                    ubo._projection = glm::perspective(glm::radians(45.0f), context._swapChainSize.width / (float)context._swapChainSize.height, 0.1f, 1000.0f);
+                    ubo._model = glm::identity<glm::mat4>();
+
+                    if (receiver.size() < dataSizeNeeded)
+                        receiver.resize(dataSizeNeeded);
+                    memcpy(&receiver[0], reinterpret_cast<const void*>(&ubo), dataSizeNeeded);
+                    break;
+                }
+                }
+            }
             break;
         }
-        }
+
+
         return (unsigned int)dataSizeNeeded;
     };
 
