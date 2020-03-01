@@ -485,10 +485,9 @@ int main(int argc, char *argv[])
 
 
     Vulkan::EffectDescriptorPtr squareEffect( new Vulkan::EffectDescriptor() );
-    squareEffect->_uniformBufferSizes.push_back((uint32_t)sizeof(UniformBufferObject));
+    squareEffect->addUniformBuffer(context, Vulkan::ShaderStage::Vertex, (uint32_t)sizeof(UniformBufferObject));
+    squareEffect->setShaderStageImageCount(Vulkan::ShaderStage::Fragment, 1);
     squareEffect->_shaderModules = squareShaders;
-    squareEffect->_numFragmentStageImages = 1;
-    squareEffect->_uniformBuffers.resize(context._rawImages.size() * squareEffect->_uniformBufferSizes.size());
     squareEffect->_recordCommandBuffers = recordStandardCommandBuffersForSquare;
     if(!Vulkan::initEffectDescriptor(appDesc, context, modifyGraphicsPipelineInfoForSquare, *squareEffect))
     {
@@ -499,7 +498,7 @@ int main(int argc, char *argv[])
     // raytracer object
     RayTracer tracer(appDesc, context, *squareEffect);
     squareEffect->_meshes = tracer._vulkanMeshes;
-
+/*
     Vulkan::EffectDescriptorPtr rayTraceEffect( new Vulkan::EffectDescriptor() );
     rayTraceEffect->_uniformBufferSizes.push_back((uint32_t)sizeof(UniformBufferObject));
     rayTraceEffect->_shaderModules = computeShaders;
@@ -511,7 +510,7 @@ int main(int argc, char *argv[])
         return 1;
     }
     context._effects.push_back(rayTraceEffect);
-
+    */
 
     // create the textured image
     constexpr int imageWidth = textureWidth;
@@ -559,20 +558,21 @@ int main(int argc, char *argv[])
         return 2;
     }
 
-    const bool imagesBound = squareEffect->bindImageViewsAndSamplers(context, std::vector<VkImageView>{ pixelImageView }, { pixelImageSampler });
+    const bool imagesBound = squareEffect->bindImageViewsAndSamplers(context, Vulkan::ShaderStage::Vertex, std::vector<VkImageView>{ pixelImageView }, { pixelImageSampler });
     if (!imagesBound)
     {
         SDL_LogError(0, "main - failed to bind image views and samplers\n");
         return 2;
     }
 
-    squareEffect->_updateUniform = [context](unsigned int uniformIndex, std::vector<unsigned char>& receiver)
+    squareEffect->_updateUniform = [context](Vulkan::ShaderStage stage, unsigned int uniformIndex, std::vector<unsigned char>& receiver)
     {
-        constexpr size_t dataSizeNeeded = sizeof(UniformBufferObject);
+        size_t dataSizeNeeded = 0;
         switch (uniformIndex)
         {
         case 0:
         {
+            dataSizeNeeded = sizeof(UniformBufferObject);
             glm::vec3 camPos{ 0,0,2 };
             glm::vec3 camDir{ 0,0,-1 };
             glm::vec3 camUp{ 0,1,0 };
