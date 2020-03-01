@@ -490,7 +490,7 @@ int main(int argc, char *argv[])
 
     Vulkan::EffectDescriptorPtr squareEffect( new Vulkan::EffectDescriptor() );
     squareEffect->addUniformBuffer(context, Vulkan::ShaderStage::Vertex, (uint32_t)sizeof(UniformBufferObject));
-    squareEffect->setShaderStageImageCount(Vulkan::ShaderStage::Fragment, 1);
+    squareEffect->setShaderStageSamplerCount(Vulkan::ShaderStage::Fragment, 1);
     squareEffect->_shaderModules = squareShaders;
     squareEffect->_recordCommandBuffers = recordStandardCommandBuffersForSquare;
     squareEffect->_name = "Square Effect";
@@ -505,7 +505,7 @@ int main(int argc, char *argv[])
     squareEffect->_meshes = tracer._vulkanMeshes;
 
     Vulkan::EffectDescriptorPtr rayTraceEffect( new Vulkan::EffectDescriptor() );
-    rayTraceEffect->addUniformBuffer(context, Vulkan::ShaderStage::Compute, (uint32_t)sizeof(UniformBufferObject));
+    rayTraceEffect->setShaderStageSamplerCount(Vulkan::ShaderStage::Compute, 1);
     rayTraceEffect->_shaderModules = computeShaders;
     rayTraceEffect->_recordCommandBuffers = recordStandardCommandBuffersForCompute;
     rayTraceEffect->_name = "RayTrace Effect";
@@ -563,7 +563,7 @@ int main(int argc, char *argv[])
         return 2;
     }
 
-    const bool imagesBound = squareEffect->bindImageViewsAndSamplers(context, Vulkan::ShaderStage::Vertex, std::vector<VkImageView>{ pixelImageView }, { pixelImageSampler });
+    const bool imagesBound = squareEffect->bindSamplers(context, Vulkan::ShaderStage::Vertex, std::vector<VkImageView>{ pixelImageView }, { pixelImageSampler });
     if (!imagesBound)
     {
         SDL_LogError(0, "main - failed to bind image views and samplers\n");
