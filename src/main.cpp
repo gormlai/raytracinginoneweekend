@@ -490,7 +490,7 @@ int main(int argc, char *argv[])
 
     Vulkan::EffectDescriptorPtr squareEffect( new Vulkan::EffectDescriptor() );
     squareEffect->addUniformBuffer(context, Vulkan::ShaderStage::Vertex, (uint32_t)sizeof(UniformBufferObject));
-    squareEffect->setShaderStageSamplerCount(Vulkan::ShaderStage::Fragment, 1);
+    squareEffect->addUniformSampler(Vulkan::ShaderStage::Fragment);
     squareEffect->_shaderModules = squareShaders;
     squareEffect->_recordCommandBuffers = recordStandardCommandBuffersForSquare;
     squareEffect->_name = "Square Effect";
@@ -504,8 +504,8 @@ int main(int argc, char *argv[])
     RayTracer tracer(appDesc, context, *squareEffect);
     squareEffect->_meshes = tracer._vulkanMeshes;
 
-    Vulkan::EffectDescriptorPtr rayTraceEffect( new Vulkan::EffectDescriptor() );
-    rayTraceEffect->setShaderStageSamplerCount(Vulkan::ShaderStage::Compute, 1);
+/*    Vulkan::EffectDescriptorPtr rayTraceEffect( new Vulkan::EffectDescriptor() );
+    rayTraceEffect->setShaderStageImagesCount(Vulkan::ShaderStage::Compute, 1);
     rayTraceEffect->_shaderModules = computeShaders;
     rayTraceEffect->_recordCommandBuffers = recordStandardCommandBuffersForCompute;
     rayTraceEffect->_name = "RayTrace Effect";
@@ -515,7 +515,7 @@ int main(int argc, char *argv[])
         return 1;
     }
     context._effects.push_back(rayTraceEffect);
-    
+  */  
 
     // create the textured image
     constexpr int imageWidth = textureWidth;
