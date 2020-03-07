@@ -171,13 +171,12 @@ bool recordStandardCommandBuffersForCompute(Vulkan::AppDescriptor& appDesc, Vulk
     }
 
     std::vector<Vulkan::MeshPtr>& vulkanMeshes = effectDescriptor._meshes;
-    const uint32_t numUniformBuffers = effectDescriptor.totalNumUniformBuffers();
+    const uint32_t numUniformBuffers = effectDescriptor.totalNumUniforms();
     static std::vector<VkDescriptorSet> descriptorSets;
     if (descriptorSets.size() < numUniformBuffers)
         descriptorSets.resize(numUniformBuffers);
 
-    const unsigned int numUpdatedBuffers = effectDescriptor.collectDescriptorSetsOfType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, context._currentFrame, &descriptorSets[0]);
-
+    const unsigned int numUpdatedBuffers = effectDescriptor.collectDescriptorSets(context._currentFrame, &descriptorSets[0]);
 
     vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_COMPUTE, effectDescriptor._pipeline);
 
@@ -185,7 +184,6 @@ bool recordStandardCommandBuffersForCompute(Vulkan::AppDescriptor& appDesc, Vulk
         VK_PIPELINE_BIND_POINT_COMPUTE,
                             effectDescriptor._pipelineLayout,
                             0,
-                            //            (uint32_t)vulkanMeshes[meshCount]->_descriptorSets.size(),
                             numUpdatedBuffers,
                             &descriptorSets[0],
                             0,
@@ -387,7 +385,7 @@ namespace
                             1,
                             format,
                             VK_IMAGE_TILING_OPTIMAL,
-                            VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                            VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT,
                             result))
         {
             SDL_LogError(0, "createImage - Failed to create image");
@@ -414,17 +412,18 @@ namespace
             return false;
         }
 
-
+        
         if(!Vulkan::transitionImageLayout(context,
                                       result,
                                       format,
                                       VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                                      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL))
+                                      VK_IMAGE_LAYOUT_GENERAL ))
+//            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL))
         {
-            SDL_LogError(0, "createImage - transitionImageLayout : VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL -> VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ");
+            SDL_LogError(0, "createImage - transitionImageLayout : VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL -> VK_IMAGE_LAYOUT_GENERAL ");
             return false;
         }
-
+        
         return true;
     }
 
@@ -513,8 +512,8 @@ int main(int argc, char *argv[])
     RayTracer tracer(appDesc, context, *squareEffect);
     squareEffect->_meshes = tracer._vulkanMeshes;
 
-/*    Vulkan::EffectDescriptorPtr rayTraceEffect( new Vulkan::EffectDescriptor() );
-    rayTraceEffect->setShaderStageImagesCount(Vulkan::ShaderStage::Compute, 1);
+    Vulkan::EffectDescriptorPtr rayTraceEffect( new Vulkan::EffectDescriptor() );
+    const uint32_t rayTraceEffectFragmentSamplerBinding = rayTraceEffect->addUniformImage(context, Vulkan::ShaderStage::Compute);
     rayTraceEffect->_shaderModules = computeShaders;
     rayTraceEffect->_recordCommandBuffers = recordStandardCommandBuffersForCompute;
     rayTraceEffect->_name = "RayTrace Effect";
@@ -524,7 +523,6 @@ int main(int argc, char *argv[])
         return 1;
     }
     context._effects.push_back(rayTraceEffect);
-  */  
 
     // create the textured image
     constexpr int imageWidth = textureWidth;
@@ -572,12 +570,20 @@ int main(int argc, char *argv[])
         return 2;
     }
 
-    const bool imagesBound = squareEffect->bindSampler(context, Vulkan::ShaderStage::Fragment, squareEffectFragmentSamplerBinding, pixelImageView, pixelImageSampler);
-    if (!imagesBound)
+    const bool samplerBound = squareEffect->bindSampler(context, Vulkan::ShaderStage::Fragment, squareEffectFragmentSamplerBinding, pixelImageView, pixelImageSampler);
+    if (!samplerBound)
     {
         SDL_LogError(0, "main - failed to bind image views and samplers\n");
         return 2;
     }
+
+    const bool imagesBound = rayTraceEffect->bindImage(context, Vulkan::ShaderStage::Compute, rayTraceEffectFragmentSamplerBinding, pixelImageView);
+    if (!imagesBound)
+    {
+        SDL_LogError(0, "main - failed to bind image views and samplers\n");
+        return 3;
+    }
+
     
     squareEffect->_updateUniform = [context, squareEffectVertexUniformBinding](Vulkan::ShaderStage stage, unsigned int uniformIndex, std::vector<unsigned char>& receiver)
     {
