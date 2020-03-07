@@ -13,8 +13,8 @@
 
 namespace
 {
-	constexpr unsigned int windowWidth = 800;
-    constexpr unsigned int windowHeight = 600;
+	constexpr unsigned int windowWidth = 1024;
+    constexpr unsigned int windowHeight = 768;
 
     constexpr unsigned int textureHeight = 100;
     constexpr unsigned int textureWidth = 200;
@@ -596,13 +596,13 @@ int main(int argc, char *argv[])
                 if(uniformIndex == squareEffectVertexUniformBinding)
                 {
                     dataSizeNeeded = sizeof(UniformBufferObject);
-                    glm::vec3 camPos{ 0,0,2 };
-                    glm::vec3 camDir{ 0,0,-1 };
+                    glm::vec3 camPos{ 0,0,1 };
                     glm::vec3 camUp{ 0,1,0 };
                     UniformBufferObject ubo;
+                    glm::vec3 camDir{ 0,0,-1 };
                     ubo._view = glm::lookAt(camPos, camPos + camDir, camUp);
-//                    ubo._projection = glm::ortho(0, 1, 0, 1);
-                    ubo._projection = glm::perspective(glm::radians(45.0f), context._swapChainSize.width / (float)context._swapChainSize.height, 0.1f, 1000.0f);
+                    ubo._projection = glm::ortho(-1, 1, -1, 1);
+//                    ubo._projection = glm::perspective(glm::radians(45.0f), context._swapChainSize.width / (float)context._swapChainSize.height, 0.1f, 1000.0f);
                     ubo._model = glm::identity<glm::mat4>();
 
                     if (receiver.size() < dataSizeNeeded)

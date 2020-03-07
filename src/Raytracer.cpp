@@ -27,7 +27,7 @@ void RayTracer::update()
 void RayTracer::createBackground()
 {
     MeshFactory & factory = MeshFactory::instance();
-    MeshPtr mesh = factory.createPlane(1, 1);
+    MeshPtr mesh = factory.createPlane(2, 2);
     if(mesh == nullptr)
         return;
 
