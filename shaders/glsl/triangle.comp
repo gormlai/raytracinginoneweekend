@@ -6,6 +6,10 @@ layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 layout(set = 0, binding = 0, rgba8) uniform image2D writeToImage;
 
 void main() {
-  vec4 color = vec4(1,0,0.5,1);
+
+  ivec2 iSize = imageSize(writeToImage);
+  vec2 uv = vec2(gl_GlobalInvocationID.xy)/vec2(iSize);
+  
+  vec4 color = vec4(1,uv.x,uv.y,1);
   imageStore(writeToImage, ivec2(gl_GlobalInvocationID.xy), color);
 }
