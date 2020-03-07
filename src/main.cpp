@@ -14,10 +14,11 @@
 namespace
 {
 	constexpr unsigned int windowWidth = 800;
-	constexpr unsigned int windowHeight = 600;
+    constexpr unsigned int windowHeight = 600;
 
-    constexpr unsigned int textureWidth = 256;
-    constexpr unsigned int textureHeight = 256;
+    constexpr unsigned int textureHeight = 100;
+    constexpr unsigned int textureWidth = 200;
+//    constexpr unsigned int textureWidth = (windowWidth * textureHeight) / windowHeight;
 
     SDL_Window * initSDL(const std::string & appName)
     {
@@ -600,6 +601,7 @@ int main(int argc, char *argv[])
                     glm::vec3 camUp{ 0,1,0 };
                     UniformBufferObject ubo;
                     ubo._view = glm::lookAt(camPos, camPos + camDir, camUp);
+//                    ubo._projection = glm::ortho(0, 1, 0, 1);
                     ubo._projection = glm::perspective(glm::radians(45.0f), context._swapChainSize.width / (float)context._swapChainSize.height, 0.1f, 1000.0f);
                     ubo._model = glm::identity<glm::mat4>();
 
@@ -621,6 +623,7 @@ int main(int argc, char *argv[])
                     glm::vec3 camUp{ 0,1,0 };
                     UniformBufferObject ubo;
                     ubo._view = glm::lookAt(camPos, camPos + camDir, camUp);
+//                    ubo._projection = glm::ortho(0, 1, 0, 1);
                     ubo._projection = glm::perspective(glm::radians(45.0f), context._swapChainSize.width / (float)context._swapChainSize.height, 0.1f, 1000.0f);
                     ubo._model = glm::identity<glm::mat4>();
 

@@ -5,14 +5,39 @@ layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 layout(set = 0, binding = 0, rgba8) uniform image2D writeToImage;
 
+struct Sphere
+{
+  vec3 _center;
+  float _radius;
+};
+
+Sphere scene[] =
+  {
+   { vec3(0,0,1) , 0.5},
+  };
+
 struct Ray
 {
   vec3 _origin;
   vec3 _direction;
 };
 
+bool hitSphere(Ray r, Sphere s)
+{
+  vec3 lineToSphere = r._origin - s._center;
+  float a = dot(r._direction, r._direction);
+  float b = 2.0 * dot(lineToSphere, r._direction);
+  float c = dot(lineToSphere, lineToSphere) - s._radius*s._radius;
+  float d = b*b - 4*a*c;
+  bool intersects = d>0;
+  return intersects;
+}
+
 vec3 getColor(Ray r)
 {
+  if(hitSphere(r, scene[0]))
+    return vec3(1.0, 0.0, 0.0);
+  
   vec3 normDir = normalize(r._direction);
   float t = 0.5 * (normDir.y + 1.0);
   vec3 color = (1.0-t) * vec3(1.0, 1.0, 1.0) + t*vec3(0.5, 0.7, 1.0);
@@ -21,13 +46,13 @@ vec3 getColor(Ray r)
 
 void main()
 {
-  vec3 lowerLeftCorner = vec3(-2.0, 1.0, -1.0);
+  vec3 lowerLeftCorner = vec3(-2.0, -1.0, -1.0);
   vec3 horizontal = vec3(4.0, 0.0, 0.0);
   vec3 vertical = vec3(0.0, 2.0, 0.0);
   vec3 origin = vec3(0.0, 0.0, 0.0);
   
   ivec2 iSize = imageSize(writeToImage);
-  vec2 uv = vec2(iSize - gl_GlobalInvocationID.xy)/vec2(iSize);
+  vec2 uv = vec2(gl_GlobalInvocationID.xy)/vec2(iSize);
 
   Ray ray;
   ray._origin = origin;
