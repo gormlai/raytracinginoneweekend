@@ -5,6 +5,13 @@ layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 layout(set = 0, binding = 0, rgba8) uniform image2D writeToImage;
 
+struct HitRecord
+{
+  float _t;
+  vec3 _point;
+  vec3 _normal;
+};
+
 struct Sphere
 {
   vec3 _center;
@@ -13,6 +20,7 @@ struct Sphere
 
 Sphere scene[] =
   {
+   { vec3(0,-100.5, -1) , 100},
    { vec3(0,0,-1) , 0.5},
   };
 
@@ -27,7 +35,7 @@ vec3 evaluate(Ray ray, float t)
   return ray._origin + t*ray._direction;
 }
 
-float hitSphere(Ray r, Sphere s)
+bool hitSphere(Ray r, Sphere s, out HitRecord record)
 {
   vec3 lineToSphere = r._origin - s._center;
   float a = dot(r._direction, r._direction);
@@ -35,25 +43,54 @@ float hitSphere(Ray r, Sphere s)
   float c = dot(lineToSphere, lineToSphere) - s._radius*s._radius;
   float d = b*b - 4*a*c;
 
-  float dist = -1;
   if(d>=0) {
-    dist = (-b - sqrt(d)) / (2.0 * a);
+    float dist0 = (-b - sqrt(d)) / (2.0 * a);
+    float dist1 = (-b + sqrt(d)) / (2.0 * a);
+    float dist = min(dist0, dist1);
+    if(dist<0)
+      dist = max(dist0, dist1);
+    if(dist<0)
+      return false;
+    record._t = dist;
+    record._point = evaluate(r, dist);
+    record._normal = (record._point - s._center)/s._radius; 
+    
+    return true;
   }
-  return dist;
+  return false;
+}
+
+float MAX_DIST = 1000000.0;
+
+HitRecord hitWorld(Ray r)
+{
+  HitRecord currentRecord;
+  currentRecord._t = MAX_DIST+1.0;
+  uint numObjectsInScene = scene.length();
+
+  for(uint i=0 ; i < numObjectsInScene ; i++) {
+    HitRecord localRecord;
+    localRecord._t = MAX_DIST+1.0;
+    if(hitSphere(r, scene[i], localRecord) && localRecord._t<currentRecord._t) {
+      currentRecord = localRecord;
+    }
+  }
+  return currentRecord;
 }
 
 vec3 getColor(Ray r)
 {
-  float t = hitSphere(r, scene[0]);
-  if(t>0) {
-    vec3 normal = normalize(evaluate(r, t) - vec3(0, 0, -1));
-    return 0.5 * (normal+vec3(1.0, 1.0, 1.0));
+  HitRecord hit = hitWorld(r);
+  if(hit._t > 0 && hit._t < MAX_DIST){
+    return 0.5 * (hit._normal+vec3(1.0, 1.0, 1.0));
+  }
+  else {
+    vec3 normDir = normalize(r._direction);
+    float t = 0.5 * (normDir.y + 1.0);
+    vec3 color = (1.0-t) * vec3(1.0, 1.0, 1.0) + t*vec3(0.5, 0.7, 1.0);
+    return color;
   }
   
-  vec3 normDir = normalize(r._direction);
-  t = 0.5 * (normDir.y + 1.0);
-  vec3 color = (1.0-t) * vec3(1.0, 1.0, 1.0) + t*vec3(0.5, 0.7, 1.0);
-  return color;
 }
 
 void main()
