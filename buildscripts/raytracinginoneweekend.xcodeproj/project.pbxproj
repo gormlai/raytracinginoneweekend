@@ -12,6 +12,7 @@
 		373E1ED8235BD11500C55A1F /* libSDL2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 373E1ED7235BD11500C55A1F /* libSDL2.dylib */; };
 		37A6FE95220B484F00C1270A /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 37A6FE94220B484F00C1270A /* main.cpp */; };
 		37AC0DA123CB96B4001D3925 /* Raytracer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 37AC0D9F23CB96B4001D3925 /* Raytracer.cpp */; };
+		37B9BFA324145FBF000A0C3B /* triangle_comp.spv in Resources */ = {isa = PBXBuildFile; fileRef = 37B9BFA224145FB5000A0C3B /* triangle_comp.spv */; };
 		37DB71B523C7F83400673155 /* libMoltenVK.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 37DB71B423C7F83400673155 /* libMoltenVK.dylib */; };
 		37DB71B623C7F89200673155 /* libMoltenVK.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 37DB71B423C7F83400673155 /* libMoltenVK.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		37DB71B723C7F89200673155 /* libSDL2.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 373E1ED7235BD11500C55A1F /* libSDL2.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -48,6 +49,8 @@
 		37A6FE94220B484F00C1270A /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = ../src/main.cpp; sourceTree = "<group>"; };
 		37AC0D9F23CB96B4001D3925 /* Raytracer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Raytracer.cpp; path = ../src/Raytracer.cpp; sourceTree = "<group>"; };
 		37AC0DA023CB96B4001D3925 /* Raytracer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Raytracer.h; path = ../src/Raytracer.h; sourceTree = "<group>"; };
+		37B9BFA024145FAB000A0C3B /* triangle.comp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = triangle.comp; path = ../shaders/glsl/triangle.comp; sourceTree = "<group>"; };
+		37B9BFA224145FB5000A0C3B /* triangle_comp.spv */ = {isa = PBXFileReference; lastKnownFileType = file; name = triangle_comp.spv; path = ../shaders/spirv/triangle_comp.spv; sourceTree = "<group>"; };
 		37DB71B423C7F83400673155 /* libMoltenVK.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libMoltenVK.dylib; path = ../dependencies/lib/osx/libMoltenVK.dylib; sourceTree = "<group>"; };
 		37DB71BC23C7F94B00673155 /* VulkanSetup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VulkanSetup.h; path = "../submodules/vulkan-setup/VulkanSetup.h"; sourceTree = "<group>"; };
 		37DB71BD23C7F94B00673155 /* VulkanSetup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VulkanSetup.cpp; path = "../submodules/vulkan-setup/VulkanSetup.cpp"; sourceTree = "<group>"; };
@@ -155,6 +158,7 @@
 			children = (
 				37DB71C223C7F96A00673155 /* triangle.frag */,
 				37DB71C123C7F96A00673155 /* triangle.vert */,
+				37B9BFA024145FAB000A0C3B /* triangle.comp */,
 			);
 			name = glsl;
 			sourceTree = "<group>";
@@ -164,6 +168,7 @@
 			children = (
 				37DB71C523C7F97400673155 /* triangle_frag.spv */,
 				37DB71C623C7F97400673155 /* triangle_vert.spv */,
+				37B9BFA224145FB5000A0C3B /* triangle_comp.spv */,
 			);
 			name = spirv;
 			sourceTree = "<group>";
@@ -231,6 +236,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				37B9BFA324145FBF000A0C3B /* triangle_comp.spv in Resources */,
 				37DB71C723C7F98100673155 /* triangle_frag.spv in Resources */,
 				37DB71C823C7F98400673155 /* triangle_vert.spv in Resources */,
 			);
