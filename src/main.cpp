@@ -72,7 +72,6 @@ namespace
 
 bool recordStandardCommandBuffersForSquare(Vulkan::AppDescriptor& appDesc, Vulkan::Context & context, Vulkan::EffectDescriptor & effectDescriptor)
 {
-
     std::vector<VkCommandBuffer>& commandBuffers = effectDescriptor._commandBuffers;
 
     if (!Vulkan::resetCommandBuffers(context, commandBuffers))
@@ -112,6 +111,21 @@ bool recordStandardCommandBuffersForSquare(Vulkan::AppDescriptor& appDesc, Vulka
     vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, effectDescriptor._pipeline);
 
     std::vector<Vulkan::MeshPtr>& vulkanMeshes = effectDescriptor._meshes;
+    const uint32_t numUniformBuffers = effectDescriptor.totalNumUniforms();
+    static std::vector<VkDescriptorSet> descriptorSets;
+    if (descriptorSets.size() < numUniformBuffers)
+        descriptorSets.resize(2*(1+numUniformBuffers)); // amortise
+
+    const unsigned int numUpdatedBuffers = effectDescriptor.collectDescriptorSets(context._currentFrame, &descriptorSets[0]);
+    vkCmdBindDescriptorSets(commandBuffers[currentFrame],
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        effectDescriptor._pipelineLayout,
+        0,
+        numUpdatedBuffers,
+        &descriptorSets[0],
+        0,
+        nullptr);
+
     for (unsigned int meshCount = 0; meshCount < vulkanMeshes.size(); meshCount++)
     {
         VkBuffer vertexBuffer[] = { vulkanMeshes[meshCount]->_vertexBuffer._buffer };
@@ -119,20 +133,7 @@ bool recordStandardCommandBuffersForSquare(Vulkan::AppDescriptor& appDesc, Vulka
 
         vkCmdBindVertexBuffers(commandBuffers[currentFrame], 0, 1, &vertexBuffer[0], offsets);
         vkCmdBindIndexBuffer(commandBuffers[currentFrame], vulkanMeshes[meshCount]->_indexBuffer._buffer, 0, VK_INDEX_TYPE_UINT16);
-        
-        vkCmdBindDescriptorSets(commandBuffers[currentFrame],
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            effectDescriptor._pipelineLayout,
-            0,
-//            (uint32_t)vulkanMeshes[meshCount]->_descriptorSets.size(),
-            1,
-            &effectDescriptor._descriptorSets[0],
-            0,
-            nullptr);
-
-            
         vkCmdDrawIndexed(commandBuffers[currentFrame], vulkanMeshes[meshCount]->_numIndices, 1, 0, 0, 0);
-
     }
     vkCmdEndRenderPass(commandBuffers[currentFrame]);
 
@@ -169,6 +170,14 @@ bool recordStandardCommandBuffersForCompute(Vulkan::AppDescriptor& appDesc, Vulk
         return false;
     }
 
+    std::vector<Vulkan::MeshPtr>& vulkanMeshes = effectDescriptor._meshes;
+    const uint32_t numUniformBuffers = effectDescriptor.totalNumUniformBuffers();
+    static std::vector<VkDescriptorSet> descriptorSets;
+    if (descriptorSets.size() < numUniformBuffers)
+        descriptorSets.resize(numUniformBuffers);
+
+    const unsigned int numUpdatedBuffers = effectDescriptor.collectDescriptorSetsOfType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, context._currentFrame, &descriptorSets[0]);
+
 
     vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_COMPUTE, effectDescriptor._pipeline);
 
@@ -177,8 +186,8 @@ bool recordStandardCommandBuffersForCompute(Vulkan::AppDescriptor& appDesc, Vulk
                             effectDescriptor._pipelineLayout,
                             0,
                             //            (uint32_t)vulkanMeshes[meshCount]->_descriptorSets.size(),
-                            1,
-                            &effectDescriptor._descriptorSets[0],
+                            numUpdatedBuffers,
+                            &descriptorSets[0],
                             0,
                             nullptr);
 
@@ -489,8 +498,8 @@ int main(int argc, char *argv[])
 
 
     Vulkan::EffectDescriptorPtr squareEffect( new Vulkan::EffectDescriptor() );
-    squareEffect->addUniformBuffer(context, Vulkan::ShaderStage::Vertex, (uint32_t)sizeof(UniformBufferObject));
-    squareEffect->addUniformSampler(Vulkan::ShaderStage::Fragment);
+    const uint32_t squareEffectVertexUniformBinding = squareEffect->addUniformBuffer(context, Vulkan::ShaderStage::Vertex, (uint32_t)sizeof(UniformBufferObject));
+    const uint32_t squareEffectFragmentSamplerBinding = squareEffect->addUniformSampler(context, Vulkan::ShaderStage::Fragment);
     squareEffect->_shaderModules = squareShaders;
     squareEffect->_recordCommandBuffers = recordStandardCommandBuffersForSquare;
     squareEffect->_name = "Square Effect";
@@ -563,38 +572,34 @@ int main(int argc, char *argv[])
         return 2;
     }
 
-    const bool imagesBound = squareEffect->bindSamplers(context, Vulkan::ShaderStage::Vertex, std::vector<VkImageView>{ pixelImageView }, { pixelImageSampler });
+    const bool imagesBound = squareEffect->bindSampler(context, Vulkan::ShaderStage::Fragment, squareEffectFragmentSamplerBinding, pixelImageView, pixelImageSampler);
     if (!imagesBound)
     {
         SDL_LogError(0, "main - failed to bind image views and samplers\n");
         return 2;
     }
-
-    squareEffect->_updateUniform = [context](Vulkan::ShaderStage stage, unsigned int uniformIndex, std::vector<unsigned char>& receiver)
+    
+    squareEffect->_updateUniform = [context, squareEffectVertexUniformBinding](Vulkan::ShaderStage stage, unsigned int uniformIndex, std::vector<unsigned char>& receiver)
     {
         size_t dataSizeNeeded = 0;
         switch (stage)
         {
             case Vulkan::ShaderStage::Vertex:
             {
-                switch (uniformIndex)
+                if(uniformIndex == squareEffectVertexUniformBinding)
                 {
-                    case 0:
-                    {
-                        dataSizeNeeded = sizeof(UniformBufferObject);
-                        glm::vec3 camPos{ 0,0,2 };
-                        glm::vec3 camDir{ 0,0,-1 };
-                        glm::vec3 camUp{ 0,1,0 };
-                        UniformBufferObject ubo;
-                        ubo._view = glm::lookAt(camPos, camPos + camDir, camUp);
-                        ubo._projection = glm::perspective(glm::radians(45.0f), context._swapChainSize.width / (float)context._swapChainSize.height, 0.1f, 1000.0f);
-                        ubo._model = glm::identity<glm::mat4>();
+                    dataSizeNeeded = sizeof(UniformBufferObject);
+                    glm::vec3 camPos{ 0,0,2 };
+                    glm::vec3 camDir{ 0,0,-1 };
+                    glm::vec3 camUp{ 0,1,0 };
+                    UniformBufferObject ubo;
+                    ubo._view = glm::lookAt(camPos, camPos + camDir, camUp);
+                    ubo._projection = glm::perspective(glm::radians(45.0f), context._swapChainSize.width / (float)context._swapChainSize.height, 0.1f, 1000.0f);
+                    ubo._model = glm::identity<glm::mat4>();
 
-                        if (receiver.size() < dataSizeNeeded)
-                            receiver.resize(dataSizeNeeded);
-                        memcpy(&receiver[0], reinterpret_cast<const void*>(&ubo), dataSizeNeeded);
-                        break;
-                    }
+                    if (receiver.size() < dataSizeNeeded)
+                        receiver.resize(dataSizeNeeded);
+                    memcpy(&receiver[0], reinterpret_cast<const void*>(&ubo), dataSizeNeeded);
                 }
             }
             break;
