@@ -121,7 +121,7 @@ vec3 getColor(Ray r)
 {
   uint numLevels = 100;
   vec3 color = vec3(0,0,0);
-  uint level = 1;
+  uint level = 0;
   for( ; level < numLevels ; level++) {
     HitRecord hit = hitWorld(r);
     if(hit._t > 0 && hit._t < MAX_DIST){
@@ -137,7 +137,11 @@ vec3 getColor(Ray r)
     }
   }
   return color * pow(0.5, level);
-}  
+}
+
+vec3 applyGamma(vec3 color) {
+  return vec3(sqrt(color.x), sqrt(color.y), sqrt(color.z));
+}
 
 void main()
 {
@@ -161,6 +165,7 @@ void main()
     color += getColor(ray);    
   }
   color = color / float(aaSamplesPrPixel);
+  vec3 gammaCorrected = applyGamma(color);
   
-  imageStore(writeToImage, ivec2(gl_GlobalInvocationID.xy), vec4(color.rgb, 1.0));
+  imageStore(writeToImage, ivec2(gl_GlobalInvocationID.xy), vec4(gammaCorrected, 1.0));
 }
