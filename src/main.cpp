@@ -14,7 +14,7 @@
 namespace
 {
 	constexpr unsigned int windowWidth = 1024;
-    constexpr unsigned int windowHeight = 768;
+    constexpr unsigned int windowHeight = 512;
 
     constexpr unsigned int textureHeight = 100;
     constexpr unsigned int textureWidth = 200;
