@@ -124,7 +124,7 @@ vec3 getColor(Ray r)
   uint level = 0;
   for( ; level < numLevels ; level++) {
     HitRecord hit = hitWorld(r);
-    if(hit._t > 0 && hit._t < MAX_DIST){
+    if(hit._t > 0.001 && hit._t < MAX_DIST){
       vec3 newDir = hit._normal + randomPointOnSphere();
       r._origin = hit._point;
       r._direction = newDir;
