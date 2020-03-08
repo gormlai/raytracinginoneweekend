@@ -109,19 +109,38 @@ vec3 getColor(Ray r)
   
 }
 
+// quick random, probably super repeating function
+// just needed something that worked
+float noise(float x)
+{
+  float v = fract(sin(x*0.59082409) *4151.2231);
+  return v;
+}
+
 void main()
 {
   
   ivec2 iSize = imageSize(writeToImage);
-  vec2 uv = vec2(gl_GlobalInvocationID.xy)/vec2(iSize);
 
+  uint aaSamplesPrPixel = 10;
+  vec3 color = vec3(0,0,0);
   Ray ray;
-  ray._origin = camera._origin;
-  ray._direction =
-    camera._lowerLeftCorner+
-    uv.x*camera._horizontal+
-    uv.y*camera._vertical;
+  float xR=123123.12312;
+  float yR=76785.431;
+  for(uint sampleCount=0; sampleCount < aaSamplesPrPixel ; sampleCount++) {
+    xR = noise(xR);
+    yR = noise(yR);
+    vec2 uv = (vec2(gl_GlobalInvocationID.xy) + vec2(xR, yR)) /vec2(iSize);
+
+    ray._origin = camera._origin;
+    ray._direction =
+      camera._lowerLeftCorner+
+      uv.x*camera._horizontal+
+      uv.y*camera._vertical -
+      camera._origin;
+    color += getColor(ray);    
+  }
+  color = color / aaSamplesPrPixel;
   
-  vec3 color = getColor(ray);
   imageStore(writeToImage, ivec2(gl_GlobalInvocationID.xy), vec4(color.rgb, 1.0));
 }

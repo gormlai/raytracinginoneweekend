@@ -16,8 +16,8 @@ namespace
 	constexpr unsigned int windowWidth = 1024;
     constexpr unsigned int windowHeight = 512;
 
-    constexpr unsigned int textureHeight = 100;
-    constexpr unsigned int textureWidth = 200;
+    constexpr unsigned int textureHeight = 200;
+    constexpr unsigned int textureWidth = 400;
 //    constexpr unsigned int textureWidth = (windowWidth * textureHeight) / windowHeight;
 
     SDL_Window * initSDL(const std::string & appName)
@@ -214,8 +214,8 @@ void render(Vulkan::AppDescriptor & appDesc, Vulkan::Context & context, bool rec
 //        earlyOut = true;
     }
 
-//    const VkResult waitForFencesResult = vkWaitForFences(context._device, 1, &context._fences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
-    const VkResult waitForFencesResult = vkWaitForFences(context._device, 1, &context._fences[currentFrame], VK_TRUE, 1);
+    const VkResult waitForFencesResult = vkWaitForFences(context._device, 1, &context._fences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
+//    const VkResult waitForFencesResult = vkWaitForFences(context._device, 1, &context._fences[currentFrame], VK_TRUE, 1);
 //    assert(waitForFencesResult == VK_SUCCESS);
 
     if(earlyOut)
