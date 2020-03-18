@@ -503,7 +503,7 @@ int main(int argc, char *argv[])
     squareEffect->_shaderModules = squareShaders;
     squareEffect->_recordCommandBuffers = recordStandardCommandBuffersForSquare;
     squareEffect->_name = "Square Effect";
-    if(!Vulkan::initEffectDescriptor(appDesc, context, modifyGraphicsPipelineInfoForSquare, *squareEffect))
+    if (!Vulkan::initEffectDescriptor(appDesc, context, true, modifyGraphicsPipelineInfoForSquare, [](Vulkan::VkRenderPassCreateInfoDescriptor&) {}, *squareEffect))
     {
         SDL_LogError(0, "Failed to init effect descriptor\n");
         return 1;
